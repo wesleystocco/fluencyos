@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
@@ -10,28 +10,40 @@ import {
   ChevronRight, Play, RotateCcw, Lightbulb
 } from 'lucide-react'
 
-// ─── LESSON DATA ──────────────────────────────────────────────────────────────
+type QuizItem = { q: string; options: string[]; answer: number; explain?: string; explainWrong?: string }
+type Lesson = {
+  id: number
+  title: string
+  subtitle: string
+  xp: number
+  minutes: number
+  color: string
+  intro: string
+  sections: any[]
+  quiz: QuizItem[]
+}
+// â”€â”€â”€ LESSON DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const LESSONS = [
+const LESSONS: Lesson[] = [
   {
     id: 1,
-    title: 'Família & Casa',
+    title: 'FamÃ­lia & Casa',
     subtitle: 'Family',
     xp: 60,
     minutes: 10,
     color: '#8b5cf6',
-    intro: 'Vocabulário do cotidiano: família, casa e lugares dentro do lar.',
+    intro: 'VocabulÃ¡rio do cotidiano: famÃ­lia, casa e lugares dentro do lar.',
     sections: [
       {
         type: 'vocab',
-        title: 'Família essencial',
+        title: 'FamÃ­lia essencial',
         items: [
-          { en:'mother',  phonetic:'/ˈmʌðər/', pt:'mãe', example:'My mother is kind.', img:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=280&q=80', imgAlt:'mother' },
-          { en:'father',  phonetic:'/ˈfɑːðər/', pt:'pai', example:'My father is tall.', img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=280&q=80', imgAlt:'father' },
-          { en:'sister',  phonetic:'/ˈsɪstər/', pt:'irmã', example:'My sister is funny.', img:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=280&q=80', imgAlt:'sister' },
-          { en:'brother', phonetic:'/ˈbrʌðər/', pt:'irmão', example:'My brother is a student.', img:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=280&q=80', imgAlt:'brother' },
-          { en:'family',  phonetic:'/ˈfæməli/', pt:'família', example:'I love my family.', img:'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=280&q=80', imgAlt:'family' },
-          { en:'house',   phonetic:'/haʊs/', pt:'casa', example:'My house is small.', img:'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=280&q=80', imgAlt:'house' },
+          { en:'mother',  phonetic:'/ËˆmÊŒÃ°É™r/', pt:'mÃ£e', example:'My mother is kind.', img:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=280&q=80', imgAlt:'mother' },
+          { en:'father',  phonetic:'/ËˆfÉ‘ËÃ°É™r/', pt:'pai', example:'My father is tall.', img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=280&q=80', imgAlt:'father' },
+          { en:'sister',  phonetic:'/ËˆsÉªstÉ™r/', pt:'irmÃ£', example:'My sister is funny.', img:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=280&q=80', imgAlt:'sister' },
+          { en:'brother', phonetic:'/ËˆbrÊŒÃ°É™r/', pt:'irmÃ£o', example:'My brother is a student.', img:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=280&q=80', imgAlt:'brother' },
+          { en:'family',  phonetic:'/ËˆfÃ¦mÉ™li/', pt:'famÃ­lia', example:'I love my family.', img:'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=280&q=80', imgAlt:'family' },
+          { en:'house',   phonetic:'/haÊŠs/', pt:'casa', example:'My house is small.', img:'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=280&q=80', imgAlt:'house' },
         ],
       },
       {
@@ -48,25 +60,25 @@ const LESSONS = [
         type: 'fill',
         title: 'Complete a frase',
         items: [
-          { sentence:'This is my ___.', options:['mother','brother','house','family'], answer:0, translation:'Esta é minha mãe.' },
-          { sentence:'My ___ is a student.', options:['sister','kitchen','garden','house'], answer:0, translation:'Minha irmã é estudante.' },
-          { sentence:'We have a big ___.', options:['family','father','room','brother'], answer:0, translation:'Nós temos uma família grande.' },
+          { sentence:'This is my ___.', options:['mother','brother','house','family'], answer:0, translation:'Esta Ã© minha mÃ£e.' },
+          { sentence:'My ___ is a student.', options:['sister','kitchen','garden','house'], answer:0, translation:'Minha irmÃ£ Ã© estudante.' },
+          { sentence:'We have a big ___.', options:['family','father','room','brother'], answer:0, translation:'NÃ³s temos uma famÃ­lia grande.' },
         ],
       },
       {
         type: 'translate',
-        title: 'Responda em inglês (PT → EN)',
+        title: 'Responda em inglÃªs (PT â†’ EN)',
         items: [
-          { pt:'mãe', options:['mother','father','sister','brother'], answer:0 },
+          { pt:'mÃ£e', options:['mother','father','sister','brother'], answer:0 },
           { pt:'casa', options:['house','home','horse','hotel'], answer:0 },
-          { pt:'família', options:['family','familiar','father','farm'], answer:0 },
+          { pt:'famÃ­lia', options:['family','familiar','father','farm'], answer:0 },
         ],
       },
     ],
     quiz: [
-      { q:'"Brother" significa:', options:['irmão','irmã','pai','mãe'], answer:0, explain:'"Brother" é irmão.' },
-      { q:'Complete: My ___ is kind.', options:['mother','house','room','garden'], answer:0, explain:'Mother = mãe.' },
-      { q:'"House" significa:', options:['casa','família','quarto','cozinha'], answer:0, explain:'"House" é casa (o lugar físico).' },
+      { q:'"Brother" significa:', options:['irmÃ£o','irmÃ£','pai','mÃ£e'], answer:0, explain:'"Brother" Ã© irmÃ£o.' },
+      { q:'Complete: My ___ is kind.', options:['mother','house','room','garden'], answer:0, explain:'Mother = mÃ£e.' },
+      { q:'"House" significa:', options:['casa','famÃ­lia','quarto','cozinha'], answer:0, explain:'"House" Ã© casa (o lugar fÃ­sico).' },
     ],
   },
   {
@@ -76,18 +88,18 @@ const LESSONS = [
     xp: 60,
     minutes: 10,
     color: '#f59e0b',
-    intro: 'Comidas, bebidas e frases úteis para pedir e comprar.',
+    intro: 'Comidas, bebidas e frases Ãºteis para pedir e comprar.',
     sections: [
       {
         type: 'vocab',
         title: 'Itens do dia a dia',
         items: [
-          { en:'bread',  phonetic:'/brɛd/', pt:'pão', example:'I need bread.', img:'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=280&q=80', imgAlt:'bread' },
-          { en:'milk',   phonetic:'/mɪlk/', pt:'leite', example:'I drink milk.', img:'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=280&q=80', imgAlt:'milk' },
-          { en:'water',  phonetic:'/ˈwɔːtər/', pt:'água', example:'A bottle of water.', img:'https://images.unsplash.com/photo-1502741126161-b048400d8377?w=280&q=80', imgAlt:'water' },
-          { en:'fruit',  phonetic:'/fruːt/', pt:'fruta', example:'I like fruit.', img:'https://images.unsplash.com/photo-1502741126161-b048400d8377?w=280&q=80', imgAlt:'fruit' },
-          { en:'coffee', phonetic:'/ˈkɔːfi/', pt:'café', example:'Coffee, please.', img:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=280&q=80', imgAlt:'coffee' },
-          { en:'rice',   phonetic:'/raɪs/', pt:'arroz', example:'Rice and beans.', img:'https://images.unsplash.com/photo-1512058564366-c9e3e0464d09?w=280&q=80', imgAlt:'rice' },
+          { en:'bread',  phonetic:'/brÉ›d/', pt:'pÃ£o', example:'I need bread.', img:'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=280&q=80', imgAlt:'bread' },
+          { en:'milk',   phonetic:'/mÉªlk/', pt:'leite', example:'I drink milk.', img:'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=280&q=80', imgAlt:'milk' },
+          { en:'water',  phonetic:'/ËˆwÉ”ËtÉ™r/', pt:'Ã¡gua', example:'A bottle of water.', img:'https://images.unsplash.com/photo-1502741126161-b048400d8377?w=280&q=80', imgAlt:'water' },
+          { en:'fruit',  phonetic:'/fruËt/', pt:'fruta', example:'I like fruit.', img:'https://images.unsplash.com/photo-1502741126161-b048400d8377?w=280&q=80', imgAlt:'fruit' },
+          { en:'coffee', phonetic:'/ËˆkÉ”Ëfi/', pt:'cafÃ©', example:'Coffee, please.', img:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=280&q=80', imgAlt:'coffee' },
+          { en:'rice',   phonetic:'/raÉªs/', pt:'arroz', example:'Rice and beans.', img:'https://images.unsplash.com/photo-1512058564366-c9e3e0464d09?w=280&q=80', imgAlt:'rice' },
         ],
       },
       {
@@ -95,33 +107,33 @@ const LESSONS = [
         title: 'No mercado',
         items: [
           { title:'Frutas', text:'I need some apples.', img:'https://images.unsplash.com/photo-1506806732259-39c2d0268443?w=800&q=80' },
-          { title:'Pães', text:'Two loaves of bread.', img:'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80' },
+          { title:'PÃ£es', text:'Two loaves of bread.', img:'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80' },
           { title:'Bebidas', text:'A bottle of water.', img:'https://images.unsplash.com/photo-1502741126161-b048400d8377?w=800&q=80' },
-          { title:'Café', text:'Coffee to go.', img:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80' },
+          { title:'CafÃ©', text:'Coffee to go.', img:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80' },
         ],
       },
       {
         type: 'fill',
         title: 'Complete a frase',
         items: [
-          { sentence:'I need some ___.', options:['water','brother','house','work'], answer:0, translation:'Eu preciso de água.' },
-          { sentence:'Can I have ___ coffee?', options:['a','an','the','some'], answer:0, translation:'Posso tomar um café?' },
+          { sentence:'I need some ___.', options:['water','brother','house','work'], answer:0, translation:'Eu preciso de Ã¡gua.' },
+          { sentence:'Can I have ___ coffee?', options:['a','an','the','some'], answer:0, translation:'Posso tomar um cafÃ©?' },
           { sentence:'She likes ___.', options:['fruit','father','room','home'], answer:0, translation:'Ela gosta de fruta.' },
         ],
       },
       {
         type: 'typing',
-        title: 'Teste de digitação',
+        title: 'Teste de digitaÃ§Ã£o',
         items: [
-          { target:'I need some water, please.', translation:'Eu preciso de água, por favor.' },
-          { target:'Can I have a coffee?', translation:'Posso tomar um café?' },
+          { target:'I need some water, please.', translation:'Eu preciso de Ã¡gua, por favor.' },
+          { target:'Can I have a coffee?', translation:'Posso tomar um cafÃ©?' },
         ],
       },
     ],
     quiz: [
-      { q:'"Bread" significa:', options:['pão','leite','arroz','fruta'], answer:0, explain:'"Bread" é pão.' },
-      { q:'Complete: I need some ___.', options:['water','house','work','family'], answer:0, explain:'"Some water" = um pouco de água.' },
-      { q:'"Coffee" significa:', options:['café','chá','suco','leite'], answer:0, explain:'"Coffee" é café.' },
+      { q:'"Bread" significa:', options:['pÃ£o','leite','arroz','fruta'], answer:0, explain:'"Bread" Ã© pÃ£o.' },
+      { q:'Complete: I need some ___.', options:['water','house','work','family'], answer:0, explain:'"Some water" = um pouco de Ã¡gua.' },
+      { q:'"Coffee" significa:', options:['cafÃ©','chÃ¡','suco','leite'], answer:0, explain:'"Coffee" Ã© cafÃ©.' },
     ],
   },
   {
@@ -131,24 +143,24 @@ const LESSONS = [
     xp: 60,
     minutes: 10,
     color: '#ef4444',
-    intro: 'Palavras e frases básicas para falar de trabalho e rotina.',
+    intro: 'Palavras e frases bÃ¡sicas para falar de trabalho e rotina.',
     sections: [
       {
         type: 'vocab',
-        title: 'No escritório',
+        title: 'No escritÃ³rio',
         items: [
-          { en:'job',     phonetic:'/dʒɑːb/', pt:'trabalho (emprego)', example:'I like my job.', img:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=280&q=80', imgAlt:'job' },
-          { en:'office',  phonetic:'/ˈɔːfɪs/', pt:'escritório', example:'The office is big.', img:'https://images.unsplash.com/photo-1497366216548-37526070297c?w=280&q=80', imgAlt:'office' },
-          { en:'meeting', phonetic:'/ˈmiːtɪŋ/', pt:'reunião', example:'We have a meeting.', img:'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=280&q=80', imgAlt:'meeting' },
-          { en:'schedule', phonetic:'/ˈskedʒuːl/', pt:'agenda', example:'My schedule is full.', img:'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=280&q=80', imgAlt:'schedule' },
+          { en:'job',     phonetic:'/dÊ’É‘Ëb/', pt:'trabalho (emprego)', example:'I like my job.', img:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=280&q=80', imgAlt:'job' },
+          { en:'office',  phonetic:'/ËˆÉ”ËfÉªs/', pt:'escritÃ³rio', example:'The office is big.', img:'https://images.unsplash.com/photo-1497366216548-37526070297c?w=280&q=80', imgAlt:'office' },
+          { en:'meeting', phonetic:'/ËˆmiËtÉªÅ‹/', pt:'reuniÃ£o', example:'We have a meeting.', img:'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=280&q=80', imgAlt:'meeting' },
+          { en:'schedule', phonetic:'/ËˆskedÊ’uËl/', pt:'agenda', example:'My schedule is full.', img:'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=280&q=80', imgAlt:'schedule' },
         ],
       },
       {
         type: 'scenes',
         title: 'Cenas do trabalho',
         items: [
-          { title:'Reunião', text:'We have a meeting at 10.', img:'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80' },
-          { title:'Escritório', text:'The office is quiet.', img:'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80' },
+          { title:'ReuniÃ£o', text:'We have a meeting at 10.', img:'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80' },
+          { title:'EscritÃ³rio', text:'The office is quiet.', img:'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80' },
           { title:'Agenda', text:'My schedule is busy.', img:'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&q=80' },
           { title:'Trabalho', text:'I like my job.', img:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80' },
         ],
@@ -157,25 +169,25 @@ const LESSONS = [
         type: 'fill',
         title: 'Complete a frase',
         items: [
-          { sentence:'I have a ___ at 10.', options:['meeting','family','kitchen','water'], answer:0, translation:'Tenho uma reunião às 10.' },
-          { sentence:'My ___ is busy.', options:['schedule','mother','fruit','house'], answer:0, translation:'Minha agenda está cheia.' },
-          { sentence:'The ___ is big.', options:['office','garden','coffee','bread'], answer:0, translation:'O escritório é grande.' },
+          { sentence:'I have a ___ at 10.', options:['meeting','family','kitchen','water'], answer:0, translation:'Tenho uma reuniÃ£o Ã s 10.' },
+          { sentence:'My ___ is busy.', options:['schedule','mother','fruit','house'], answer:0, translation:'Minha agenda estÃ¡ cheia.' },
+          { sentence:'The ___ is big.', options:['office','garden','coffee','bread'], answer:0, translation:'O escritÃ³rio Ã© grande.' },
         ],
       },
       {
         type: 'dialogue',
-        title: 'Diálogo rápido',
+        title: 'DiÃ¡logo rÃ¡pido',
         lines: [
-          { speaker:'A', text:'Do you like your job?', translation:'Você gosta do seu trabalho?' },
-          { speaker:'B', text:'Yes, but my schedule is busy.', translation:'Sim, mas minha agenda é cheia.' },
-          { speaker:'A', text:'We have a meeting at 10.', translation:'Temos uma reunião às 10.' },
+          { speaker:'A', text:'Do you like your job?', translation:'VocÃª gosta do seu trabalho?' },
+          { speaker:'B', text:'Yes, but my schedule is busy.', translation:'Sim, mas minha agenda Ã© cheia.' },
+          { speaker:'A', text:'We have a meeting at 10.', translation:'Temos uma reuniÃ£o Ã s 10.' },
         ],
       },
     ],
     quiz: [
-      { q:'"Office" significa:', options:['escritório','trabalho','agenda','reunião'], answer:0, explain:'"Office" é escritório.' },
-      { q:'Complete: I have a ___.', options:['meeting','bread','family','water'], answer:0, explain:'"Meeting" é reunião.' },
-      { q:'"Job" significa:', options:['trabalho','casa','família','café'], answer:0, explain:'"Job" é trabalho (emprego).' },
+      { q:'"Office" significa:', options:['escritÃ³rio','trabalho','agenda','reuniÃ£o'], answer:0, explain:'"Office" Ã© escritÃ³rio.' },
+      { q:'Complete: I have a ___.', options:['meeting','bread','family','water'], answer:0, explain:'"Meeting" Ã© reuniÃ£o.' },
+      { q:'"Job" significa:', options:['trabalho','casa','famÃ­lia','cafÃ©'], answer:0, explain:'"Job" Ã© trabalho (emprego).' },
     ],
   },
 ]
@@ -184,7 +196,7 @@ function normalizeAnswer(value: string) {
   return value.toLowerCase().trim().replace(/\s+/g, ' ')
 }
 
-// ─── LESSON CARD ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ LESSON CARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function LessonCard({ lesson, index, isCompleted, onClick }: {
   lesson: typeof LESSONS[0]; index: number; isCompleted: boolean; onClick: () => void
@@ -227,7 +239,7 @@ function LessonCard({ lesson, index, isCompleted, onClick }: {
   )
 }
 
-// ─── LESSON VIEW ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ LESSON VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function LessonView({ lesson, onBack, onComplete }: {
   lesson: typeof LESSONS[0]; onBack: () => void; onComplete: () => void
@@ -255,9 +267,9 @@ function LessonView({ lesson, onBack, onComplete }: {
     }
     const correctOption = lesson.quiz[qIdx].options[lesson.quiz[qIdx].answer]
     const correctExplain = lesson.quiz[qIdx].explain || `Resposta correta: ${correctOption}.`
-    const wrongExplain = lesson.quiz[qIdx].explainWrong || `A correta é "${correctOption}".`
+    const wrongExplain = lesson.quiz[qIdx].explainWrong || `A correta Ã© "${correctOption}".`
     setFeedback({
-      title: selected === lesson.quiz[qIdx].answer ? 'Correto!' : 'Ops! Ainda não',
+      title: selected === lesson.quiz[qIdx].answer ? 'Correto!' : 'Ops! Ainda nÃ£o',
       message: selected === lesson.quiz[qIdx].answer ? correctExplain : wrongExplain,
       tone: selected === lesson.quiz[qIdx].answer ? 'success' : 'error',
     })
@@ -303,7 +315,7 @@ function LessonView({ lesson, onBack, onComplete }: {
         </button>
         <div className="flex-1">
           <div className="text-[11px] font-bold uppercase tracking-widest mb-0.5" style={{ color:lesson.color }}>
-            {lesson.subtitle} · Módulo 3
+            {lesson.subtitle} Â· MÃ³dulo 3
           </div>
           <h2 className="text-2xl font-black text-white">{lesson.title}</h2>
         </div>
@@ -393,7 +405,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                   <div className="px-5 py-3 flex items-center gap-2"
                     style={{ borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
                     <Play size={13} style={{ color:lesson.color }}/>
-                    <span className="text-[12px] font-bold text-white">Diálogo completo</span>
+                    <span className="text-[12px] font-bold text-white">DiÃ¡logo completo</span>
                   </div>
                   <div className="px-5 py-4 space-y-4">
                     {(section as any).lines?.map((line: any, i: number) => (
@@ -465,7 +477,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                     return (
                       <div key={i} className="rounded-2xl p-5"
                         style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.06)' }}>
-                        <div className="text-[12px] text-slate-500 mb-1">Responda em inglês</div>
+                        <div className="text-[12px] text-slate-500 mb-1">Responda em inglÃªs</div>
                         <div className="text-lg font-black text-white mb-3">{item.pt}</div>
                         <div className="grid sm:grid-cols-2 gap-2">
                           {item.options.map((opt: string, oi: number) => {
@@ -493,10 +505,10 @@ function LessonView({ lesson, onBack, onComplete }: {
                               setChoices(s => ({ ...s, [key]: { selected: state.selected, revealed: true } }))
                               if (isCorrect) addXP('quiz_correct')
                               const correctOption = item.options[item.answer]
-                              const correctExplain = item.explain || `"${item.pt}" em inglês é "${correctOption}".`
-                              const wrongExplain = item.explainWrong || `A correta é "${correctOption}".`
+                              const correctExplain = item.explain || `"${item.pt}" em inglÃªs Ã© "${correctOption}".`
+                              const wrongExplain = item.explainWrong || `A correta Ã© "${correctOption}".`
                               setFeedback({
-                                title: isCorrect ? 'Correto!' : 'Ops! Ainda não',
+                                title: isCorrect ? 'Correto!' : 'Ops! Ainda nÃ£o',
                                 message: isCorrect ? correctExplain : wrongExplain,
                                 tone: isCorrect ? 'success' : 'error',
                               })
@@ -568,10 +580,10 @@ function LessonView({ lesson, onBack, onComplete }: {
                               setChoices(s => ({ ...s, [key]: { selected: state.selected, revealed: true } }))
                               if (isCorrect) addXP('quiz_correct')
                               const correctOption = item.options[item.answer]
-                              const correctExplain = item.explain || `A lacuna correta é "${correctOption}".`
-                              const wrongExplain = item.explainWrong || `A correta é "${correctOption}".`
+                              const correctExplain = item.explain || `A lacuna correta Ã© "${correctOption}".`
+                              const wrongExplain = item.explainWrong || `A correta Ã© "${correctOption}".`
                               setFeedback({
-                                title: isCorrect ? 'Correto!' : 'Ops! Ainda não',
+                                title: isCorrect ? 'Correto!' : 'Ops! Ainda nÃ£o',
                                 message: isCorrect ? correctExplain : wrongExplain,
                                 tone: isCorrect ? 'success' : 'error',
                               })
@@ -637,10 +649,10 @@ function LessonView({ lesson, onBack, onComplete }: {
                               if (status.revealed) return
                               setTypingStatus(s => ({ ...s, [key]: { revealed: true, correct: isCorrect } }))
                               if (isCorrect) addXP('quiz_correct')
-                              const correctExplain = item.explain || `A frase correta é: "${item.target}".`
-                              const wrongExplain = item.explainWrong || `A frase correta é: "${item.target}".`
+                              const correctExplain = item.explain || `A frase correta Ã©: "${item.target}".`
+                              const wrongExplain = item.explainWrong || `A frase correta Ã©: "${item.target}".`
                               setFeedback({
-                                title: isCorrect ? 'Perfeito!' : 'Quase lá',
+                                title: isCorrect ? 'Perfeito!' : 'Quase lÃ¡',
                                 message: isCorrect ? correctExplain : wrongExplain,
                                 tone: isCorrect ? 'success' : 'error',
                               })
@@ -695,7 +707,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                       {(section as any).examples.map((ex: any, i: number) => (
                         <div key={i} className="text-[13px] text-slate-300">
                           <span className="font-semibold text-white">{ex.en}</span>
-                          <span className="text-slate-500"> — {ex.pt}</span>
+                          <span className="text-slate-500"> â€” {ex.pt}</span>
                         </div>
                       ))}
                     </div>
@@ -717,7 +729,7 @@ function LessonView({ lesson, onBack, onComplete }: {
             style={{ background:`${lesson.color}0a`, border:`1.5px solid ${lesson.color}25` }}>
             <Trophy size={28} className="mx-auto mb-3" style={{ color:lesson.color }}/>
             <h4 className="text-lg font-black text-white mb-2">Pronto para o quiz?</h4>
-            <p className="text-sm text-slate-400 mb-5">{lesson.quiz.length} perguntas — ganhe {lesson.xp} XP ao concluir</p>
+            <p className="text-sm text-slate-400 mb-5">{lesson.quiz.length} perguntas â€” ganhe {lesson.xp} XP ao concluir</p>
             <button onClick={() => setQuizActive(true)}
               className="cta-button cta-float px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all"
               style={{ background:lesson.color, boxShadow:`0 4px 20px ${lesson.color}30` }}>
@@ -726,7 +738,7 @@ function LessonView({ lesson, onBack, onComplete }: {
           </div>
         </>
       ) : (
-        /* ── QUIZ ── */
+        /* â”€â”€ QUIZ â”€â”€ */
         <div className="max-w-lg mx-auto">
           {!quizDone ? (
             <div>
@@ -781,7 +793,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                     </div>
                     <button onClick={handleNext} className="cta-button px-5 py-3 rounded-xl text-sm font-bold text-white"
                       style={{ background:lesson.color }}>
-                      {qIdx < lesson.quiz.length - 1 ? 'Próxima' : 'Finalizar'}
+                      {qIdx < lesson.quiz.length - 1 ? 'PrÃ³xima' : 'Finalizar'}
                     </button>
                   </>
                 )}
@@ -797,7 +809,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                 {correct}<span className="text-slate-600">/{lesson.quiz.length}</span>
               </div>
               <div className="text-slate-400 mb-2">
-                {correct === lesson.quiz.length ? 'Perfeito! Você domina esta lição.' : correct >= 2 ? 'Muito bem! Continue avançando.' : 'Continue praticando — você vai chegar lá!'}
+                {correct === lesson.quiz.length ? 'Perfeito! VocÃª domina esta liÃ§Ã£o.' : correct >= 2 ? 'Muito bem! Continue avanÃ§ando.' : 'Continue praticando â€” vocÃª vai chegar lÃ¡!'}
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
                 style={{ background:`${lesson.color}15`, color:lesson.color }}>
@@ -807,12 +819,12 @@ function LessonView({ lesson, onBack, onComplete }: {
                 <button onClick={() => { setQIdx(0); setSelected(null); setRevealed(false); setCorrect(0); setQuizDone(false); setQuizActive(false) }}
                   className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:text-white transition-all"
                   style={{ border:'1px solid rgba(255,255,255,0.08)' }}>
-                  <RotateCcw size={13}/> Rever lição
+                  <RotateCcw size={13}/> Rever liÃ§Ã£o
                 </button>
                 <button onClick={onComplete}
                   className="cta-button flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white"
                   style={{ background:lesson.color }}>
-                  Próxima lição <ArrowRight size={14}/>
+                  PrÃ³xima liÃ§Ã£o <ArrowRight size={14}/>
                 </button>
               </div>
             </motion.div>
@@ -823,7 +835,7 @@ function LessonView({ lesson, onBack, onComplete }: {
   )
 }
 
-// ─── MODULE 3 PAGE ────────────────────────────────────────────────────────────
+// â”€â”€â”€ MODULE 3 PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function Modulo3Page() {
   const { completedLessons } = useXPStore()
@@ -871,15 +883,15 @@ export default function Modulo3Page() {
         {!lesson ? (
           <>
             <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5 }} className="mb-10">
-              <div className="text-[11px] font-bold uppercase tracking-widest text-purple-400 mb-2">Módulo 3 de 8</div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-purple-400 mb-2">MÃ³dulo 3 de 8</div>
               <h1 className="text-4xl font-black text-white tracking-tight mb-3">Cotidiano</h1>
               <p className="text-slate-400 max-w-xl leading-relaxed">
-                Família, comida e trabalho — as palavras que você usa todos os dias.
+                FamÃ­lia, comida e trabalho â€” as palavras que vocÃª usa todos os dias.
               </p>
               <div className="flex flex-wrap gap-3 mt-5">
                 <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
                   style={{ background:'rgba(59,130,246,0.08)', color:'#60a5fa', border:'1px solid rgba(59,130,246,0.15)' }}>
-                  <BookOpen size={13}/> {LESSONS.length} lições
+                  <BookOpen size={13}/> {LESSONS.length} liÃ§Ãµes
                 </div>
                 <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
                   style={{ background:'rgba(245,158,11,0.08)', color:'#fbbf24', border:'1px solid rgba(245,158,11,0.15)' }}>
@@ -892,7 +904,7 @@ export default function Modulo3Page() {
                 {completed.length > 0 && (
                   <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
                     style={{ background:'rgba(16,185,129,0.08)', color:'#34d399', border:'1px solid rgba(16,185,129,0.15)' }}>
-                    <CheckCircle size={13}/> {completed.length}/{LESSONS.length} concluídas
+                    <CheckCircle size={13}/> {completed.length}/{LESSONS.length} concluÃ­das
                   </div>
                 )}
               </div>
@@ -911,8 +923,8 @@ export default function Modulo3Page() {
                 className="mt-8 p-8 rounded-2xl text-center"
                 style={{ background:'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.2)' }}>
                 <Trophy size={32} className="mx-auto mb-3 text-green-400"/>
-                <h3 className="text-xl font-black text-white mb-2">Módulo 3 concluído!</h3>
-                <p className="text-slate-400 mb-5">Você ganhou {totalXP} XP. Próximo: Tempos Verbais I.</p>
+                <h3 className="text-xl font-black text-white mb-2">MÃ³dulo 3 concluÃ­do!</h3>
+                <p className="text-slate-400 mb-5">VocÃª ganhou {totalXP} XP. PrÃ³ximo: Tempos Verbais I.</p>
                 <Link href="/dashboard"
                   className="cta-button inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white"
                   style={{ background:'#10b981' }}>
@@ -928,3 +940,4 @@ export default function Modulo3Page() {
     </div>
   )
 }
+

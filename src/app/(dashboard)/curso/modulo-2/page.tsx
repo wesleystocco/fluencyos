@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
@@ -10,9 +10,21 @@ import {
   ChevronRight, Play, RotateCcw, Lightbulb
 } from 'lucide-react'
 
-// ─── LESSON DATA ──────────────────────────────────────────────────────────────
+type QuizItem = { q: string; options: string[]; answer: number; explain?: string; explainWrong?: string }
+type Lesson = {
+  id: number
+  title: string
+  subtitle: string
+  xp: number
+  minutes: number
+  color: string
+  intro: string
+  sections: any[]
+  quiz: QuizItem[]
+}
+// â”€â”€â”€ LESSON DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const LESSONS = [
+const LESSONS: Lesson[] = [
   {
     id: 1,
     title: 'To Be & To Have',
@@ -20,31 +32,31 @@ const LESSONS = [
     xp: 60,
     minutes: 10,
     color: '#10b981',
-    intro: 'Os dois verbos mais usados do inglês para falar de estado, identidade e posse.',
+    intro: 'Os dois verbos mais usados do inglÃªs para falar de estado, identidade e posse.',
     sections: [
       {
         type: 'explain',
         title: 'Quando usar',
-        text: 'Use "to be" para identidade, estado e localização. Use "to have" para posse e relação.',
+        text: 'Use "to be" para identidade, estado e localizaÃ§Ã£o. Use "to have" para posse e relaÃ§Ã£o.',
         examples: [
           { en:'I am Maria.',  pt:'Eu sou a Maria.' },
-          { en:'He is happy.', pt:'Ele está feliz.' },
-          { en:'We are here.', pt:'Nós estamos aqui.' },
+          { en:'He is happy.', pt:'Ele estÃ¡ feliz.' },
+          { en:'We are here.', pt:'NÃ³s estamos aqui.' },
           { en:'I have a car.', pt:'Eu tenho um carro.' },
           { en:'She has a dog.', pt:'Ela tem um cachorro.' },
         ],
-        tip: 'Contrações: I am = I\'m, you are = you\'re, he is = he\'s, I have = I\'ve.',
+        tip: 'ContraÃ§Ãµes: I am = I\'m, you are = you\'re, he is = he\'s, I have = I\'ve.',
       },
       {
         type: 'vocab',
         title: 'Frases essenciais',
         items: [
-          { en:'I am',   phonetic:'/aɪ æm/',     pt:'Eu sou/estou',  example:'I am ready.',      img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=280&q=80', imgAlt:'person' },
-          { en:'You are',phonetic:'/juː ɑːr/',   pt:'Você é/está',   example:'You are here.',    img:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=280&q=80', imgAlt:'people' },
-          { en:'He is',  phonetic:'/hiː ɪz/',    pt:'Ele é/está',    example:'He is my friend.', img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=280&q=80', imgAlt:'friend' },
-          { en:'I have', phonetic:'/aɪ hæv/',    pt:'Eu tenho',      example:'I have a car.',     img:'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=280&q=80', imgAlt:'car' },
-          { en:'She has',phonetic:'/ʃiː hæz/',   pt:'Ela tem',       example:'She has a dog.',    img:'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=280&q=80', imgAlt:'dog' },
-          { en:'We have',phonetic:'/wiː hæv/',   pt:'Nós temos',     example:'We have class.',    img:'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=280&q=80', imgAlt:'class' },
+          { en:'I am',   phonetic:'/aÉª Ã¦m/',     pt:'Eu sou/estou',  example:'I am ready.',      img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=280&q=80', imgAlt:'person' },
+          { en:'You are',phonetic:'/juË É‘Ër/',   pt:'VocÃª Ã©/estÃ¡',   example:'You are here.',    img:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=280&q=80', imgAlt:'people' },
+          { en:'He is',  phonetic:'/hiË Éªz/',    pt:'Ele Ã©/estÃ¡',    example:'He is my friend.', img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=280&q=80', imgAlt:'friend' },
+          { en:'I have', phonetic:'/aÉª hÃ¦v/',    pt:'Eu tenho',      example:'I have a car.',     img:'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=280&q=80', imgAlt:'car' },
+          { en:'She has',phonetic:'/ÊƒiË hÃ¦z/',   pt:'Ela tem',       example:'She has a dog.',    img:'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=280&q=80', imgAlt:'dog' },
+          { en:'We have',phonetic:'/wiË hÃ¦v/',   pt:'NÃ³s temos',     example:'We have class.',    img:'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=280&q=80', imgAlt:'class' },
         ],
         tip: 'Para falar de coisas: I have a phone. Para falar de sentimentos: I am tired.',
       },
@@ -54,8 +66,8 @@ const LESSONS = [
         items: [
           { sentence:'I ___ a student.',            options:['am','is','are','have','has'], answer:0, translation:'Eu sou estudante.' },
           { sentence:'She ___ a new phone.',        options:['has','have','am','are','is'], answer:0, translation:'Ela tem um celular novo.' },
-          { sentence:'We ___ at home.',             options:['are','is','am','have','has'], answer:0, translation:'Nós estamos em casa.' },
-          { sentence:'He ___ two brothers.',        options:['has','have','is','am','are'], answer:0, translation:'Ele tem dois irmãos.' },
+          { sentence:'We ___ at home.',             options:['are','is','am','have','has'], answer:0, translation:'NÃ³s estamos em casa.' },
+          { sentence:'He ___ two brothers.',        options:['has','have','is','am','are'], answer:0, translation:'Ele tem dois irmÃ£os.' },
         ],
       },
       {
@@ -72,7 +84,7 @@ const LESSONS = [
     quiz: [
       { q:'Qual forma do to be com "I"?', options:['am','is','are','be'], answer:0, explain:'Com "I" usamos "am".' },
       { q:'Complete: She ___ a dog.',      options:['has','have','is','are'], answer:0, explain:'Com "she" usamos "has" para posse.' },
-      { q:'"We are" significa:',          options:['Nós somos/estamos','Eu sou','Ele é','Ela tem'], answer:0, explain:'"We are" = nós somos/estamos.' },
+      { q:'"We are" significa:',          options:['NÃ³s somos/estamos','Eu sou','Ele Ã©','Ela tem'], answer:0, explain:'"We are" = nÃ³s somos/estamos.' },
     ],
   },
   {
@@ -86,22 +98,22 @@ const LESSONS = [
     sections: [
       {
         type: 'explain',
-        title: 'Estrutura rápida',
+        title: 'Estrutura rÃ¡pida',
         text: 'Use "go" + lugar: go to school, go to work. Para casa: go home (sem "to").',
         examples: [
           { en:'I go to school.', pt:'Eu vou para a escola.' },
           { en:'She goes to work.', pt:'Ela vai para o trabalho.' },
-          { en:'We go home.', pt:'Nós vamos para casa.' },
+          { en:'We go home.', pt:'NÃ³s vamos para casa.' },
         ],
       },
       {
         type: 'vocab',
         title: 'Frases com go',
         items: [
-          { en:'go to school', phonetic:'/goʊ tuː skuːl/', pt:'ir para a escola', example:'I go to school.', img:'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=280&q=80', imgAlt:'school' },
-          { en:'go to work',   phonetic:'/goʊ tuː wɜːrk/', pt:'ir para o trabalho', example:'He goes to work.', img:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=280&q=80', imgAlt:'work' },
-          { en:'go home',      phonetic:'/goʊ hoʊm/',     pt:'ir para casa', example:'We go home early.', img:'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=280&q=80', imgAlt:'home' },
-          { en:'go out',       phonetic:'/goʊ aʊt/',       pt:'sair', example:'They go out at night.', img:'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=280&q=80', imgAlt:'night' },
+          { en:'go to school', phonetic:'/goÊŠ tuË skuËl/', pt:'ir para a escola', example:'I go to school.', img:'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=280&q=80', imgAlt:'school' },
+          { en:'go to work',   phonetic:'/goÊŠ tuË wÉœËrk/', pt:'ir para o trabalho', example:'He goes to work.', img:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=280&q=80', imgAlt:'work' },
+          { en:'go home',      phonetic:'/goÊŠ hoÊŠm/',     pt:'ir para casa', example:'We go home early.', img:'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=280&q=80', imgAlt:'home' },
+          { en:'go out',       phonetic:'/goÊŠ aÊŠt/',       pt:'sair', example:'They go out at night.', img:'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=280&q=80', imgAlt:'night' },
         ],
       },
       {
@@ -110,23 +122,23 @@ const LESSONS = [
         items: [
           { sentence:'She ___ to school every day.', options:['goes','go','going','gone'], answer:0, translation:'Ela vai para a escola todo dia.' },
           { sentence:'I ___ home now.',              options:['go','goes','gone','going'], answer:0, translation:'Eu vou para casa agora.' },
-          { sentence:'We ___ to work at 8.',         options:['go','goes','gone','going'], answer:0, translation:'Nós vamos trabalhar às 8.' },
+          { sentence:'We ___ to work at 8.',         options:['go','goes','gone','going'], answer:0, translation:'NÃ³s vamos trabalhar Ã s 8.' },
         ],
       },
       {
         type: 'dialogue',
-        title: 'Diálogo rápido',
+        title: 'DiÃ¡logo rÃ¡pido',
         lines: [
-          { speaker:'A', text:'Do you go to the gym?', translation:'Você vai para a academia?' },
-          { speaker:'B', text:'Yes, I go on Mondays.', translation:'Sim, eu vou às segundas.' },
-          { speaker:'A', text:'Nice! I go too.', translation:'Legal! Eu também vou.' },
+          { speaker:'A', text:'Do you go to the gym?', translation:'VocÃª vai para a academia?' },
+          { speaker:'B', text:'Yes, I go on Mondays.', translation:'Sim, eu vou Ã s segundas.' },
+          { speaker:'A', text:'Nice! I go too.', translation:'Legal! Eu tambÃ©m vou.' },
         ],
       },
     ],
     quiz: [
       { q:'Complete: She ___ to work.', options:['goes','go','gone','going'], answer:0, explain:'Com "she" usamos "goes".' },
-      { q:'"Go home" significa:', options:['Ir para casa','Ir para a escola','Sair','Voltar'], answer:0, explain:'"Go home" é ir para casa.' },
-      { q:'Qual é a forma com "I"?', options:['go','goes','gone','going'], answer:0, explain:'Com "I" usamos "go".' },
+      { q:'"Go home" significa:', options:['Ir para casa','Ir para a escola','Sair','Voltar'], answer:0, explain:'"Go home" Ã© ir para casa.' },
+      { q:'Qual Ã© a forma com "I"?', options:['go','goes','gone','going'], answer:0, explain:'Com "I" usamos "go".' },
     ],
   },
   {
@@ -136,49 +148,49 @@ const LESSONS = [
     xp: 55,
     minutes: 9,
     color: '#f59e0b',
-    intro: 'Use "can" para falar de habilidade ou pedir algo com educação.',
+    intro: 'Use "can" para falar de habilidade ou pedir algo com educaÃ§Ã£o.',
     sections: [
       {
         type: 'explain',
         title: 'Como usar',
-        text: '"Can" é igual para todas as pessoas: I can, you can, he can. Para negar: can\'t.',
+        text: '"Can" Ã© igual para todas as pessoas: I can, you can, he can. Para negar: can\'t.',
         examples: [
           { en:'I can swim.', pt:'Eu sei nadar.' },
-          { en:'Can you help me?', pt:'Você pode me ajudar?' },
-          { en:'She can\'t come today.', pt:'Ela não pode vir hoje.' },
+          { en:'Can you help me?', pt:'VocÃª pode me ajudar?' },
+          { en:'She can\'t come today.', pt:'Ela nÃ£o pode vir hoje.' },
         ],
       },
       {
         type: 'vocab',
         title: 'Frases com can',
         items: [
-          { en:'I can cook',      phonetic:'/aɪ kæn kʊk/',    pt:'Eu sei cozinhar', example:'I can cook pasta.', img:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=280&q=80', imgAlt:'cook' },
-          { en:'Can you help?',  phonetic:'/kæn juː help/',   pt:'Você pode ajudar?', example:'Can you help me?', img:'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=280&q=80', imgAlt:'help' },
-          { en:'I can\'t go',     phonetic:'/aɪ kænt goʊ/',    pt:'Eu não posso ir', example:'I can\'t go today.', img:'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=280&q=80', imgAlt:'go' },
+          { en:'I can cook',      phonetic:'/aÉª kÃ¦n kÊŠk/',    pt:'Eu sei cozinhar', example:'I can cook pasta.', img:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=280&q=80', imgAlt:'cook' },
+          { en:'Can you help?',  phonetic:'/kÃ¦n juË help/',   pt:'VocÃª pode ajudar?', example:'Can you help me?', img:'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=280&q=80', imgAlt:'help' },
+          { en:'I can\'t go',     phonetic:'/aÉª kÃ¦nt goÊŠ/',    pt:'Eu nÃ£o posso ir', example:'I can\'t go today.', img:'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=280&q=80', imgAlt:'go' },
         ],
       },
       {
         type: 'translate',
-        title: 'Responda em inglês (PT → EN)',
+        title: 'Responda em inglÃªs (PT â†’ EN)',
         items: [
           { pt:'Eu posso ajudar?', options:['Can I help?','I can help?','Can you help?','I help?'], answer:0 },
           { pt:'Ele sabe nadar',   options:['He can swim','He can swims','He is swim','He swims can'], answer:0 },
-          { pt:'Eu não posso ir',  options:["I can't go",'I can\'t to go','I don\'t can go','I no can go'], answer:0 },
+          { pt:'Eu nÃ£o posso ir',  options:["I can't go",'I can\'t to go','I don\'t can go','I no can go'], answer:0 },
         ],
       },
       {
         type: 'typing',
-        title: 'Teste de digitação',
+        title: 'Teste de digitaÃ§Ã£o',
         items: [
-          { target:'Can you help me?', translation:'Você pode me ajudar?' },
+          { target:'Can you help me?', translation:'VocÃª pode me ajudar?' },
           { target:'I can swim.', translation:'Eu sei nadar.' },
         ],
       },
     ],
     quiz: [
-      { q:'Como negar "can"?', options:["can't","don't","isn't","no can"], answer:0, explain:'A forma negativa é "can\'t".' },
-      { q:'Complete: She ___ cook.', options:['can','cans','can\'t','is'], answer:0, explain:'"Can" não muda: she can.' },
-      { q:'"Can you help?" significa:', options:['Você pode ajudar?','Você ajudou?','Você ajuda?','Você quer ajudar?'], answer:0, explain:'É um pedido educado.' },
+      { q:'Como negar "can"?', options:["can't","don't","isn't","no can"], answer:0, explain:'A forma negativa Ã© "can\'t".' },
+      { q:'Complete: She ___ cook.', options:['can','cans','can\'t','is'], answer:0, explain:'"Can" nÃ£o muda: she can.' },
+      { q:'"Can you help?" significa:', options:['VocÃª pode ajudar?','VocÃª ajudou?','VocÃª ajuda?','VocÃª quer ajudar?'], answer:0, explain:'Ã‰ um pedido educado.' },
     ],
   },
 ]
@@ -187,7 +199,7 @@ function normalizeAnswer(value: string) {
   return value.toLowerCase().trim().replace(/\s+/g, ' ')
 }
 
-// ─── LESSON CARD ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ LESSON CARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function LessonCard({ lesson, index, isCompleted, onClick }: {
   lesson: typeof LESSONS[0]; index: number; isCompleted: boolean; onClick: () => void
@@ -230,7 +242,7 @@ function LessonCard({ lesson, index, isCompleted, onClick }: {
   )
 }
 
-// ─── LESSON VIEW ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ LESSON VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function LessonView({ lesson, onBack, onComplete }: {
   lesson: typeof LESSONS[0]; onBack: () => void; onComplete: () => void
@@ -258,9 +270,9 @@ function LessonView({ lesson, onBack, onComplete }: {
     }
     const correctOption = lesson.quiz[qIdx].options[lesson.quiz[qIdx].answer]
     const correctExplain = lesson.quiz[qIdx].explain || `Resposta correta: ${correctOption}.`
-    const wrongExplain = lesson.quiz[qIdx].explainWrong || `A correta é "${correctOption}".`
+    const wrongExplain = lesson.quiz[qIdx].explainWrong || `A correta Ã© "${correctOption}".`
     setFeedback({
-      title: selected === lesson.quiz[qIdx].answer ? 'Correto!' : 'Ops! Ainda não',
+      title: selected === lesson.quiz[qIdx].answer ? 'Correto!' : 'Ops! Ainda nÃ£o',
       message: selected === lesson.quiz[qIdx].answer ? correctExplain : wrongExplain,
       tone: selected === lesson.quiz[qIdx].answer ? 'success' : 'error',
     })
@@ -306,7 +318,7 @@ function LessonView({ lesson, onBack, onComplete }: {
         </button>
         <div className="flex-1">
           <div className="text-[11px] font-bold uppercase tracking-widest mb-0.5" style={{ color:lesson.color }}>
-            {lesson.subtitle} · Módulo 2
+            {lesson.subtitle} Â· MÃ³dulo 2
           </div>
           <h2 className="text-2xl font-black text-white">{lesson.title}</h2>
         </div>
@@ -396,7 +408,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                   <div className="px-5 py-3 flex items-center gap-2"
                     style={{ borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
                     <Play size={13} style={{ color:lesson.color }}/>
-                    <span className="text-[12px] font-bold text-white">Diálogo completo</span>
+                    <span className="text-[12px] font-bold text-white">DiÃ¡logo completo</span>
                   </div>
                   <div className="px-5 py-4 space-y-4">
                     {(section as any).lines?.map((line: any, i: number) => (
@@ -468,7 +480,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                     return (
                       <div key={i} className="rounded-2xl p-5"
                         style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.06)' }}>
-                        <div className="text-[12px] text-slate-500 mb-1">Responda em inglês</div>
+                        <div className="text-[12px] text-slate-500 mb-1">Responda em inglÃªs</div>
                         <div className="text-lg font-black text-white mb-3">{item.pt}</div>
                         <div className="grid sm:grid-cols-2 gap-2">
                           {item.options.map((opt: string, oi: number) => {
@@ -496,10 +508,10 @@ function LessonView({ lesson, onBack, onComplete }: {
                               setChoices(s => ({ ...s, [key]: { selected: state.selected, revealed: true } }))
                               if (isCorrect) addXP('quiz_correct')
                               const correctOption = item.options[item.answer]
-                              const correctExplain = item.explain || `"${item.pt}" em inglês é "${correctOption}".`
-                              const wrongExplain = item.explainWrong || `A correta é "${correctOption}".`
+                              const correctExplain = item.explain || `"${item.pt}" em inglÃªs Ã© "${correctOption}".`
+                              const wrongExplain = item.explainWrong || `A correta Ã© "${correctOption}".`
                               setFeedback({
-                                title: isCorrect ? 'Correto!' : 'Ops! Ainda não',
+                                title: isCorrect ? 'Correto!' : 'Ops! Ainda nÃ£o',
                                 message: isCorrect ? correctExplain : wrongExplain,
                                 tone: isCorrect ? 'success' : 'error',
                               })
@@ -571,10 +583,10 @@ function LessonView({ lesson, onBack, onComplete }: {
                               setChoices(s => ({ ...s, [key]: { selected: state.selected, revealed: true } }))
                               if (isCorrect) addXP('quiz_correct')
                               const correctOption = item.options[item.answer]
-                              const correctExplain = item.explain || `A lacuna correta é "${correctOption}".`
-                              const wrongExplain = item.explainWrong || `A correta é "${correctOption}".`
+                              const correctExplain = item.explain || `A lacuna correta Ã© "${correctOption}".`
+                              const wrongExplain = item.explainWrong || `A correta Ã© "${correctOption}".`
                               setFeedback({
-                                title: isCorrect ? 'Correto!' : 'Ops! Ainda não',
+                                title: isCorrect ? 'Correto!' : 'Ops! Ainda nÃ£o',
                                 message: isCorrect ? correctExplain : wrongExplain,
                                 tone: isCorrect ? 'success' : 'error',
                               })
@@ -640,10 +652,10 @@ function LessonView({ lesson, onBack, onComplete }: {
                               if (status.revealed) return
                               setTypingStatus(s => ({ ...s, [key]: { revealed: true, correct: isCorrect } }))
                               if (isCorrect) addXP('quiz_correct')
-                              const correctExplain = item.explain || `A frase correta é: "${item.target}".`
-                              const wrongExplain = item.explainWrong || `A frase correta é: "${item.target}".`
+                              const correctExplain = item.explain || `A frase correta Ã©: "${item.target}".`
+                              const wrongExplain = item.explainWrong || `A frase correta Ã©: "${item.target}".`
                               setFeedback({
-                                title: isCorrect ? 'Perfeito!' : 'Quase lá',
+                                title: isCorrect ? 'Perfeito!' : 'Quase lÃ¡',
                                 message: isCorrect ? correctExplain : wrongExplain,
                                 tone: isCorrect ? 'success' : 'error',
                               })
@@ -698,7 +710,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                       {(section as any).examples.map((ex: any, i: number) => (
                         <div key={i} className="text-[13px] text-slate-300">
                           <span className="font-semibold text-white">{ex.en}</span>
-                          <span className="text-slate-500"> — {ex.pt}</span>
+                          <span className="text-slate-500"> â€” {ex.pt}</span>
                         </div>
                       ))}
                     </div>
@@ -720,7 +732,7 @@ function LessonView({ lesson, onBack, onComplete }: {
             style={{ background:`${lesson.color}0a`, border:`1.5px solid ${lesson.color}25` }}>
             <Trophy size={28} className="mx-auto mb-3" style={{ color:lesson.color }}/>
             <h4 className="text-lg font-black text-white mb-2">Pronto para o quiz?</h4>
-            <p className="text-sm text-slate-400 mb-5">{lesson.quiz.length} perguntas — ganhe {lesson.xp} XP ao concluir</p>
+            <p className="text-sm text-slate-400 mb-5">{lesson.quiz.length} perguntas â€” ganhe {lesson.xp} XP ao concluir</p>
             <button onClick={() => setQuizActive(true)}
               className="cta-button cta-float px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all"
               style={{ background:lesson.color, boxShadow:`0 4px 20px ${lesson.color}30` }}>
@@ -729,7 +741,7 @@ function LessonView({ lesson, onBack, onComplete }: {
           </div>
         </>
       ) : (
-        /* ── QUIZ ── */
+        /* â”€â”€ QUIZ â”€â”€ */
         <div className="max-w-lg mx-auto">
           {!quizDone ? (
             <div>
@@ -784,7 +796,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                     </div>
                     <button onClick={handleNext} className="cta-button px-5 py-3 rounded-xl text-sm font-bold text-white"
                       style={{ background:lesson.color }}>
-                      {qIdx < lesson.quiz.length - 1 ? 'Próxima' : 'Finalizar'}
+                      {qIdx < lesson.quiz.length - 1 ? 'PrÃ³xima' : 'Finalizar'}
                     </button>
                   </>
                 )}
@@ -800,7 +812,7 @@ function LessonView({ lesson, onBack, onComplete }: {
                 {correct}<span className="text-slate-600">/{lesson.quiz.length}</span>
               </div>
               <div className="text-slate-400 mb-2">
-                {correct === lesson.quiz.length ? 'Perfeito! Você domina esta lição.' : correct >= 2 ? 'Muito bem! Continue avançando.' : 'Continue praticando — você vai chegar lá!'}
+                {correct === lesson.quiz.length ? 'Perfeito! VocÃª domina esta liÃ§Ã£o.' : correct >= 2 ? 'Muito bem! Continue avanÃ§ando.' : 'Continue praticando â€” vocÃª vai chegar lÃ¡!'}
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
                 style={{ background:`${lesson.color}15`, color:lesson.color }}>
@@ -810,12 +822,12 @@ function LessonView({ lesson, onBack, onComplete }: {
                 <button onClick={() => { setQIdx(0); setSelected(null); setRevealed(false); setCorrect(0); setQuizDone(false); setQuizActive(false) }}
                   className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:text-white transition-all"
                   style={{ border:'1px solid rgba(255,255,255,0.08)' }}>
-                  <RotateCcw size={13}/> Rever lição
+                  <RotateCcw size={13}/> Rever liÃ§Ã£o
                 </button>
                 <button onClick={onComplete}
                   className="cta-button flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white"
                   style={{ background:lesson.color }}>
-                  Próxima lição <ArrowRight size={14}/>
+                  PrÃ³xima liÃ§Ã£o <ArrowRight size={14}/>
                 </button>
               </div>
             </motion.div>
@@ -826,7 +838,7 @@ function LessonView({ lesson, onBack, onComplete }: {
   )
 }
 
-// ─── MODULE 2 PAGE ────────────────────────────────────────────────────────────
+// â”€â”€â”€ MODULE 2 PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function Modulo2Page() {
   const { completedLessons } = useXPStore()
@@ -874,15 +886,15 @@ export default function Modulo2Page() {
         {!lesson ? (
           <>
             <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5 }} className="mb-10">
-              <div className="text-[11px] font-bold uppercase tracking-widest text-green-400 mb-2">Módulo 2 de 8</div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-green-400 mb-2">MÃ³dulo 2 de 8</div>
               <h1 className="text-4xl font-black text-white tracking-tight mb-3">Verbos Essenciais</h1>
               <p className="text-slate-400 max-w-xl leading-relaxed">
-                To be, to have, to go e can — os verbos que dão vida ao inglês do dia a dia.
+                To be, to have, to go e can â€” os verbos que dÃ£o vida ao inglÃªs do dia a dia.
               </p>
               <div className="flex flex-wrap gap-3 mt-5">
                 <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
                   style={{ background:'rgba(59,130,246,0.08)', color:'#60a5fa', border:'1px solid rgba(59,130,246,0.15)' }}>
-                  <BookOpen size={13}/> {LESSONS.length} lições
+                  <BookOpen size={13}/> {LESSONS.length} liÃ§Ãµes
                 </div>
                 <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
                   style={{ background:'rgba(245,158,11,0.08)', color:'#fbbf24', border:'1px solid rgba(245,158,11,0.15)' }}>
@@ -895,7 +907,7 @@ export default function Modulo2Page() {
                 {completed.length > 0 && (
                   <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
                     style={{ background:'rgba(16,185,129,0.08)', color:'#34d399', border:'1px solid rgba(16,185,129,0.15)' }}>
-                    <CheckCircle size={13}/> {completed.length}/{LESSONS.length} concluídas
+                    <CheckCircle size={13}/> {completed.length}/{LESSONS.length} concluÃ­das
                   </div>
                 )}
               </div>
@@ -914,8 +926,8 @@ export default function Modulo2Page() {
                 className="mt-8 p-8 rounded-2xl text-center"
                 style={{ background:'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.2)' }}>
                 <Trophy size={32} className="mx-auto mb-3 text-green-400"/>
-                <h3 className="text-xl font-black text-white mb-2">Módulo 2 concluído!</h3>
-                <p className="text-slate-400 mb-5">Você ganhou {totalXP} XP. Próximo: Cotidiano.</p>
+                <h3 className="text-xl font-black text-white mb-2">MÃ³dulo 2 concluÃ­do!</h3>
+                <p className="text-slate-400 mb-5">VocÃª ganhou {totalXP} XP. PrÃ³ximo: Cotidiano.</p>
                 <Link href="/dashboard"
                   className="cta-button inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white"
                   style={{ background:'#10b981' }}>
@@ -931,3 +943,4 @@ export default function Modulo2Page() {
     </div>
   )
 }
+
