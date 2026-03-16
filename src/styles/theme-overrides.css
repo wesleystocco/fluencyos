@@ -1,0 +1,110 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FLUENCYOS - ADAPTAÇÃO AUTOMÁTICA DE CORES PARA LIGHT MODE
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Quando em light mode, adaptar elementos com cores escuras */
+html.light {
+  /* Forçar backgrounds claros nos elementos principais */
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+html.light main,
+html.light section {
+  background-color: transparent;  /* Deixar herdar do pai */
+}
+
+/* Adaptação de cores específicas inline em light mode */
+html.light [style*="background: #05050e"],
+html.light [style*="background:#05050e"],
+html.light [style*="background: #0a0a14"],
+html.light [style*="background:#0a0a14"],
+html.light [style*="background: #07070f"],
+html.light [style*="background:#07070f"],
+html.light [style*="background: #0d0d1a"],
+html.light [style*="background:#0d0d1a"],
+html.light [style*="background: #12121d"],
+html.light [style*="background:#12121d"],
+html.light [style*="background: #030308"],
+html.light [style*="background:#030308"] {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Adaptar texto claro para escuro em light mode */
+html.light [style*="color: #f0f0ff"],
+html.light [style*="color:#f0f0ff"],
+html.light [style*="color: #fff"],
+html.light [style*="color:#fff"],
+html.light [style*="color: white"],
+html.light [style*="color:white"] {
+  color: var(--text-primary) !important;
+}
+
+/* Adaptar borders claros para escuros em light mode */
+html.light [style*="border: 1px solid rgba(255,255,255"],
+html.light [style*="border-bottom: 1px solid rgba(255,255,255"],
+html.light [style*="borderBottom: 1px solid rgba(255,255,255"],
+html.light [style*="borderColor: rgba(255,255,255"] {
+  border-color: var(--border-medium) !important;
+}
+
+/* Adaptar texto médio para médio escuro em light mode */
+html.light [style*="color: #64748b"],
+html.light [style*="color:#64748b"],
+html.light [style*="color: #b0b0cc"],
+html.light [style*="color:#b0b0cc"],
+html.light [style*="color: #808099"],
+html.light [style*="color:#808099"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Inputs/Textareas em light mode */
+html.light input,
+html.light textarea {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-medium) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+html.light input:focus,
+html.light textarea:focus {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--accent-blue) !important;
+}
+
+/* Utility-class fixes for light mode.
+   Many components use Tailwind classes like `text-white` for dark mode; in light mode
+   we remap them to theme variables to keep readable contrast without touching JSX. */
+html.light body {
+  color: var(--text-primary);
+}
+
+html.light .text-white {
+  color: var(--text-primary) !important;
+}
+
+html.light .text-slate-300,
+html.light .text-slate-400 {
+  color: var(--text-secondary) !important;
+}
+
+html.light .text-slate-500,
+html.light .text-slate-600,
+html.light .text-slate-700 {
+  color: var(--text-tertiary) !important;
+}
+
+html.light .border-white {
+  border-color: var(--border-medium) !important;
+}
+
+/* Modo intermediário (auto) */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════ */

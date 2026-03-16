@@ -1,0 +1,962 @@
+'use client'
+
+import { useState, useRef } from 'react'
+import { motion, useInView } from 'framer-motion'
+import Link from 'next/link'
+import { useXPStore } from '@/store/xp'
+import {
+  ArrowLeft, ArrowRight, CheckCircle, Volume2,
+  BookOpen, Zap, Target, Trophy,
+  ChevronRight, Play, RotateCcw, Lightbulb
+} from 'lucide-react'
+
+// ─── LESSON DATA ──────────────────────────────────────────────────────────────
+
+const LESSONS = [
+  {
+    id: 1,
+    title: 'Alfabeto & Pronúncia',
+    subtitle: 'The Alphabet',
+    xp: 50,
+    minutes: 8,
+    color: '#3b82f6',
+    intro: 'O inglês usa o mesmo alfabeto de 26 letras que o português — mas a pronúncia é completamente diferente. Esta lição vai te dar a base para pronunciar qualquer palavra.',
+    sections: [
+      {
+        type: 'vocab',
+        title: 'As Vogais — As mais importantes',
+        items: [
+          { en:'A', phonetic:'/eɪ/',   pt:'"êi"',      example:'Apple, Age, Able',    img:'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=280&q=80', imgAlt:'apple'       },
+          { en:'E', phonetic:'/iː/',   pt:'"i" longo',  example:'Energy, End, Every',  img:'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=280&q=80', imgAlt:'electricity'  },
+          { en:'I', phonetic:'/aɪ/',   pt:'"ái"',       example:'Ice, Iron, Island',   img:'https://images.unsplash.com/photo-1581939272468-cd72b5c8e70d?w=280&q=80', imgAlt:'ice'          },
+          { en:'O', phonetic:'/oʊ/',   pt:'"ou"',       example:'Ocean, Open, Over',   img:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=280&q=80', imgAlt:'ocean'        },
+          { en:'U', phonetic:'/juː/',  pt:'"iú"',       example:'Unique, Unit, Use',   img:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=280&q=80', imgAlt:'universe'     },
+        ],
+        tip: 'As vogais em inglês têm dois sons: o "nome da letra" (long vowel) e o "som curto" (short vowel). Você vai aprender os dois no módulo 2.',
+      },
+      {
+        type: 'sentences',
+        title: 'Consoantes que enganam brasileiros',
+        items: [
+          { letter:'H',  wrong:'Não é "agá" — é quase mudo!',          right:'Hello = "hélo" (não "relo")',              note:'Aspire o ar, como um suspiro'         },
+          { letter:'R',  wrong:'Não é o R sonoro como o nosso',         right:'Red = "réd" (r suave, fundo da boca)',    note:'Enrole levemente a língua'            },
+          { letter:'W',  wrong:'Não é "dáblio" na pronúncia',           right:'Water = "uóter" (começa com "u" rápido)', note:'Faça bico com os lábios'              },
+          { letter:'TH', wrong:'Não existe em português!',              right:'The = "dhê" / Think = "thínk"',           note:'Língua levemente entre os dentes'      },
+        ],
+      },
+    ],
+    quiz: [
+      { q:'Como se pronuncia a letra "A" em inglês?',      options:['"á" como em "arara"','"êi" como em "eight"','"a" como em "pato"','"á" como em "acesso"'], answer:1, explain:'A letra A em inglês tem som de /eɪ/, como em "eight".' },
+      { q:'Qual o som correto de "TH" em "the"?',          options:['Igual ao T','Igual ao D','Língua entre os dentes, suave','Igual ao F'],                   answer:2, explain:'Em "the" o som é suave com a língua entre os dentes (ð).' },
+      { q:'Como se pronuncia o R em inglês (ex: "red")?',  options:['Igual ao R brasileiro','Enrolado, na garganta','R suave, fundo da boca','Mudo'],          answer:2, explain:'O R em inglês é suave, sem vibrar, feito no fundo da boca.' },
+    ],
+  },
+  {
+    id: 2,
+    title: 'Cumprimentos',
+    subtitle: 'Greetings',
+    xp: 40,
+    minutes: 6,
+    color: '#10b981',
+    intro: 'As primeiras palavras que você vai usar em qualquer conversa em inglês. Aprenda a se apresentar, cumprimentar e despedir do jeito certo.',
+    sections: [
+      {
+        type: 'vocab',
+        title: 'Cumprimentos por hora do dia',
+        items: [
+          { en:'Good morning',    phonetic:'/gʊd ˈmɔːrnɪŋ/',       pt:'Bom dia',    example:'Good morning! How are you?',        img:'https://images.unsplash.com/photo-1469827160215-9d29e96e72f4?w=280&q=80', imgAlt:'morning'   },
+          { en:'Good afternoon',  phonetic:'/gʊd ˌæftərˈnuːn/',    pt:'Boa tarde',  example:'Good afternoon, everyone.',         img:'https://images.unsplash.com/photo-1472752763278-c3b80d24de89?w=280&q=80', imgAlt:'afternoon' },
+          { en:'Good evening',    phonetic:'/gʊd ˈiːvnɪŋ/',        pt:'Boa noite',  example:'Good evening, sir. Welcome.',       img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=280&q=80', imgAlt:'evening'   },
+          { en:'Goodbye',         phonetic:'/gʊdˈbaɪ/',             pt:'Tchau',      example:'Goodbye! See you tomorrow.',        img:'https://images.unsplash.com/photo-1554034483-04fda0d3507b?w=280&q=80', imgAlt:'goodbye'   },
+          { en:'See you later',   phonetic:'/siː juː ˈleɪtər/',    pt:'Até mais',   example:'"See you later!" / "See ya!"',      img:'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=280&q=80', imgAlt:'friends'   },
+          { en:'Nice to meet you',phonetic:'/naɪs tə miːt juː/',   pt:'Prazer',     example:'"Nice to meet you too!"',           img:'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=280&q=80', imgAlt:'handshake' },
+        ],
+        tip: '"Good night" é usado APENAS para desejar boa noite antes de dormir — não como saudação. Para chegar à noite, use "Good evening".',
+      },
+      {
+        type: 'dialogue',
+        title: 'Diálogo real: Apresentação',
+        lines: [
+          { speaker:'A', text:"Hi! My name is Lucas. Nice to meet you!",        translation:'Oi! Meu nome é Lucas. Prazer em te conhecer!' },
+          { speaker:'B', text:"Nice to meet you too, Lucas! I'm Sarah.",         translation:'Prazer também, Lucas! Eu sou Sarah.'           },
+          { speaker:'A', text:"Where are you from, Sarah?",                      translation:'De onde você é, Sarah?'                        },
+          { speaker:'B', text:"I'm from New York. And you?",                     translation:'Sou de Nova York. E você?'                     },
+          { speaker:'A', text:"I'm from Brazil! From São Paulo.",                translation:'Sou do Brasil! De São Paulo.'                  },
+          { speaker:'B', text:"Oh, that's amazing! I love Brazil!",              translation:'Oh, que incrível! Eu adoro o Brasil!'          },
+        ],
+      },
+    ],
+    quiz: [
+      { q:'"Good evening" é usado quando?',          options:['De manhã cedo','Tarde da noite, para dormir','Ao chegar à noite','A qualquer hora'], answer:2, explain:'"Good evening" é saudação ao chegar à noite.' },
+      { q:'Como responder a "Nice to meet you"?',    options:['"Yes"','"Nice to meet you too"','"Good"','"Okay"'],                                   answer:1, explain:'A resposta padrão é "Nice to meet you too".' },
+      { q:'"Where are you from?" significa:',        options:['Como você está?','De onde você é?','Como é seu nome?','O que você faz?'],             answer:1, explain:'A pergunta é "De onde você é?".' },
+    ],
+  },
+  {
+    id: 3,
+    title: 'Números',
+    subtitle: 'Numbers',
+    xp: 45,
+    minutes: 7,
+    color: '#8b5cf6',
+    intro: 'Números são usados em preços, horários, endereços e conversas do dia a dia. Domine-os e você se vira em qualquer situação.',
+    sections: [
+      {
+        type: 'numbers',
+        title: 'De 0 a 20 — memorize com padrões',
+        groups: [
+          { label:'0–10',    items:['zero','one','two','three','four','five','six','seven','eight','nine','ten']                                                                       },
+          { label:'11–20',   items:['eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty']                                            },
+          { label:'Dezenas', items:['ten','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety','one hundred']                                                         },
+        ],
+        tip: 'Cuidado: thirteen (13) vs thirty (30). A diferença está no "-teen" no final. E eighteen, não "eigthteen".',
+      },
+      {
+        type: 'vocab',
+        title: 'Números na vida real',
+        items: [
+          { en:"How much is it?",  phonetic:'/haʊ mʌtʃ ɪz ɪt/',  pt:'Quanto custa?',    example:"— How much is it? — It's five dollars.", img:'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=280&q=80', imgAlt:'price'  },
+          { en:"What time is it?", phonetic:'/wɒt taɪm ɪz ɪt/',   pt:'Que horas são?',   example:"— What time is it? — It's three o'clock.", img:'https://images.unsplash.com/photo-1495364141860-b0d03eccd065?w=280&q=80', imgAlt:'clock'  },
+          { en:"My number is...",  phonetic:'/maɪ ˈnʌmbər ɪz/',   pt:'Meu número é...',  example:'My phone number is five-five-five.',      img:'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=280&q=80', imgAlt:'phone'  },
+        ],
+        tip: `Para dizer horas: "It's 3 o'clock" = 3h exatas. "Half past 3" = 3h30. "A quarter to 4" = 3h45.`,
+      },
+    ],
+    quiz: [
+      { q:'Como se escreve o número 15 em inglês?',     options:['fiften','fifteen','fiveteen','fivteen'],                                  answer:1, explain:'15 se escreve "fifteen".' },
+      { q:`"It's half past two" significa:`,           options:['São duas horas','São duas e meia','Falta meia hora','São duas menos 15'], answer:1, explain:'"Half past" significa meia hora depois: 2:30.' },
+      { q:'Diferença entre 13 e 30 em inglês:',         options:['Thirteen vs Thirty','Thirten vs Thirtee','Não há diferença','Ambos iguais'], answer:0, explain:'13 = thirteen e 30 = thirty.' },
+    ],
+  },
+  {
+    id: 4,
+    title: 'Dia a Dia',
+    subtitle: 'Everyday',
+    xp: 55,
+    minutes: 9,
+    color: '#f59e0b',
+    intro: 'Palavras e frases que você usa o tempo todo. Aqui você traduz rápido, completa lacunas e treina digitação.',
+    sections: [
+      {
+        type: 'translate',
+        title: 'Responda em inglês (PT → EN)',
+        items: [
+          { pt:'bom',                   options:['good','well','food','go'],         answer:0, note:'good = adjetivo; well = advérbio' },
+          { pt:'ruim',                  options:['bad','bed','bud','bald'],          answer:0 },
+          { pt:'água',                  options:['water','waiter','winter','later'], answer:0 },
+          { pt:'casa (o lugar físico)', options:['house','home','horse','hose'],     answer:0 },
+          { pt:'obrigado(a)',           options:['thanks','thinks','thin','thank'],  answer:0 },
+          { pt:'por favor',             options:['please','pleas','peas','piece'],   answer:0 },
+        ],
+        tip: 'Dica: palavras parecidas confundem no começo. Treine a forma correta e a pronúncia.',
+      },
+      {
+        type: 'fill',
+        title: 'Complete a frase',
+        items: [
+          { sentence:'I need ___ water, please.', options:['some','same','sum','soap'], answer:0, translation:'Eu preciso de um pouco de água, por favor.' },
+          { sentence:'Can I have the ___?',        options:['menu','many','money','man'], answer:0, translation:'Posso ver o cardápio?' },
+          { sentence:'This is my ___.',            options:['name','game','time','same'], answer:0, translation:'Este é meu nome.' },
+          { sentence:'I live in a ___.',           options:['city','kitty','site','sity'], answer:0, translation:'Eu moro em uma cidade.' },
+          { sentence:'It is very ___ today.',      options:['hot','hat','hit','hurt'], answer:0, translation:'Está muito quente hoje.' },
+        ],
+      },
+      {
+        type: 'typing',
+        title: 'Teste de digitação',
+        items: [
+          { target:'Good morning! How are you?',      translation:'Bom dia! Como você está?' },
+          { target:'This is my phone.',               translation:'Este é meu telefone.' },
+          { target:'I need some water, please.',      translation:'Eu preciso de um pouco de água, por favor.' },
+        ],
+        tip: 'Pontuação e espaços fazem parte da escrita. Vá devagar e foque em acertar.',
+      },
+    ],
+    quiz: [
+      { q:'Como dizer "por favor" em inglês?', options:['please','pleas','peas','piece'], answer:0, explain:'"Please" é "por favor".' },
+      { q:'Complete: I need ___ water.',       options:['some','same','sum','soap'],      answer:0, explain:'Com substantivos incontáveis usamos "some".' },
+      { q:'"good" significa:',                 options:['bom','ruim','água','casa'],      answer:0, explain:'"Good" significa "bom".' },
+    ],
+  },
+  {
+    id: 5,
+    title: 'Verbo To Be',
+    subtitle: 'To Be',
+    xp: 60,
+    minutes: 10,
+    color: '#ec4899',
+    intro: 'O verbo mais usado do inglês. Aprenda am/is/are e pratique com um joguinho simples.',
+    sections: [
+      {
+        type: 'explain',
+        title: 'Como funciona o To Be',
+        text: 'Use o to be para falar de identidade, estado e localização. Ele muda conforme o sujeito.',
+        examples: [
+          { en:'I am Ana.',       pt:'Eu sou a Ana.' },
+          { en:'She is happy.',   pt:'Ela está feliz.' },
+          { en:'We are at home.', pt:'Nós estamos em casa.' },
+        ],
+        tip: 'Contrações comuns: I am = I\'m, you are = you\'re, he is = he\'s.',
+      },
+      {
+        type: 'fill',
+        title: 'Jogo rápido: escolha a forma correta',
+        items: [
+          { sentence:'I ___ a student.',            options:['am','is','are','be','do'],   answer:0, translation:'Eu sou estudante.' },
+          { sentence:'He ___ my brother.',          options:['is','are','am','be','does'], answer:0, translation:'Ele é meu irmão.' },
+          { sentence:'You ___ in the right place.', options:['are','is','am','be','do'],   answer:0, translation:'Você está no lugar certo.' },
+          { sentence:'We ___ from Brazil.',         options:['are','is','am','be','do'],   answer:0, translation:'Nós somos do Brasil.' },
+          { sentence:'It ___ cold today.',          options:['is','are','am','be','does'], answer:0, translation:'Está frio hoje.' },
+        ],
+      },
+      {
+        type: 'dialogue',
+        title: 'Mini diálogo com To Be',
+        lines: [
+          { speaker:'A', text:'Hi! I am Leo. Are you new here?',          translation:'Oi! Eu sou o Leo. Você é novo aqui?' },
+          { speaker:'B', text:'Yes, I am. I am from Recife.',             translation:'Sim, sou. Eu sou de Recife.' },
+          { speaker:'A', text:'Nice! We are in the same class.',          translation:'Legal! Estamos na mesma turma.' },
+        ],
+      },
+    ],
+    quiz: [
+      { q:'Qual forma do to be com "he"?',  options:['is','am','are','be'],            answer:0, explain:'Com "he" usamos "is".' },
+      { q:'Complete: I ___ happy.',         options:['am','is','are','be'],            answer:0, explain:'Com "I" usamos "am".' },
+      { q:'Contração de "you are":',        options:["you're",'youre','your','yore'],  answer:0, explain:'A contração correta é "you\'re".' },
+    ],
+  },
+]
+
+function normalizeAnswer(value: string) {
+  return value.toLowerCase().trim().replace(/\s+/g, ' ')
+}
+
+// ─── LESSON CARD ──────────────────────────────────────────────────────────────
+
+function LessonCard({ lesson, index, isCompleted, onClick }: {
+  lesson: typeof LESSONS[0]; index: number; isCompleted: boolean; onClick: () => void
+}) {
+  const ref    = useRef(null)
+  const inView = useInView(ref, { once: true })
+
+  return (
+    <motion.div ref={ref}
+      initial={{ opacity:0, y:20 }} animate={inView ? { opacity:1, y:0 } : {}}
+      transition={{ delay:index * 0.1, duration:0.5 }}
+      onClick={onClick}
+      className="cursor-pointer rounded-2xl p-6 transition-all duration-200"
+      style={{ background:'#0d0d1a', border:`1px solid ${isCompleted ? lesson.color+'30' : 'rgba(255,255,255,0.06)'}` }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor=`${lesson.color}45`; e.currentTarget.style.transform='translateY(-2px)' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor=isCompleted?`${lesson.color}30`:'rgba(255,255,255,0.06)'; e.currentTarget.style.transform='translateY(0)' }}>
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background:`${lesson.color}15` }}>
+          {isCompleted
+            ? <CheckCircle size={22} style={{ color:lesson.color }}/>
+            : <span className="text-xl font-black" style={{ color:lesson.color }}>{index + 1}</span>
+          }
+        </div>
+        <div className="flex-1">
+          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color:lesson.color }}>{lesson.subtitle}</span>
+          <h3 className="font-black text-white text-lg leading-tight mt-0.5">{lesson.title}</h3>
+          <p className="text-[13px] text-slate-500 mt-1 leading-snug line-clamp-2">{lesson.intro}</p>
+        </div>
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full"
+            style={{ background:`${lesson.color}15`, color:lesson.color }}>
+            <Zap size={9}/> +{lesson.xp} XP
+          </div>
+          <div className="text-[11px] text-slate-600">{lesson.minutes} min</div>
+          <ChevronRight size={14} className="text-slate-600"/>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ─── LESSON VIEW ──────────────────────────────────────────────────────────────
+
+function LessonView({ lesson, onBack, onComplete }: {
+  lesson: typeof LESSONS[0]; onBack: () => void; onComplete: () => void
+}) {
+  const { completeLesson, addXP } = useXPStore()
+  const [quizActive, setQuizActive] = useState(false)
+  const [qIdx,       setQIdx]       = useState(0)
+  const [selected,   setSelected]   = useState<number | null>(null)
+  const [revealed,   setRevealed]   = useState(false)
+  const [correct,    setCorrect]    = useState(0)
+  const [quizDone,   setQuizDone]   = useState(false)
+  const [choices,    setChoices]    = useState<Record<string, { selected: number | null; revealed: boolean }>>({})
+  const [typingInput, setTypingInput] = useState<Record<string, string>>({})
+  const [typingStatus, setTypingStatus] = useState<Record<string, { revealed: boolean; correct: boolean }>>({})
+  const [feedback, setFeedback] = useState<{ title: string; message: string; tone: 'success' | 'error' } | null>(null)
+
+  const q = lesson.quiz[qIdx]
+
+  function handleAnswer() {
+    if (selected === null) return
+    setRevealed(true)
+    if (selected === lesson.quiz[qIdx].answer) {
+      setCorrect(c => c + 1)
+      addXP('quiz_correct')
+    }
+    const correctOption = lesson.quiz[qIdx].options[lesson.quiz[qIdx].answer]
+    const correctExplain = lesson.quiz[qIdx].explain || `Resposta correta: ${correctOption}.`
+    const wrongExplain = lesson.quiz[qIdx].explainWrong || `A correta é "${correctOption}".`
+    setFeedback({
+      title: selected === lesson.quiz[qIdx].answer ? 'Correto!' : 'Ops! Ainda não',
+      message: selected === lesson.quiz[qIdx].answer ? correctExplain : wrongExplain,
+      tone: selected === lesson.quiz[qIdx].answer ? 'success' : 'error',
+    })
+  }
+
+  function handleNext() {
+    if (qIdx < lesson.quiz.length - 1) {
+      setQIdx(q => q + 1); setSelected(null); setRevealed(false)
+    } else {
+      setQuizDone(true)
+      completeLesson(`modulo-1-licao-${lesson.id}`)
+    }
+  }
+
+  return (
+    <div>
+      {feedback && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-5"
+          style={{ background:'rgba(5,5,14,0.7)', backdropFilter:'blur(6px)' }}>
+          <div className="w-full max-w-md rounded-2xl p-6"
+            style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.08)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-widest mb-2"
+              style={{ color: feedback.tone === 'success' ? '#34d399' : '#f87171' }}>
+              {feedback.tone === 'success' ? 'Resposta correta' : 'Resposta incorreta'}
+            </div>
+            <div className="text-xl font-black text-white mb-2">{feedback.title}</div>
+            <p className="text-[13px] text-slate-400 leading-relaxed mb-5">{feedback.message}</p>
+            <button
+              onClick={() => setFeedback(null)}
+              className="w-full py-3 rounded-xl text-sm font-bold text-white"
+              style={{ background: feedback.tone === 'success' ? '#10b981' : '#ef4444' }}>
+              Continuar
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <button onClick={onBack}
+          className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-all"
+          style={{ border:'1px solid rgba(255,255,255,0.08)' }}>
+          <ArrowLeft size={15}/>
+        </button>
+        <div className="flex-1">
+          <div className="text-[11px] font-bold uppercase tracking-widest mb-0.5" style={{ color:lesson.color }}>
+            {lesson.subtitle} · Módulo 1
+          </div>
+          <h2 className="text-2xl font-black text-white">{lesson.title}</h2>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
+          style={{ background:`${lesson.color}15`, border:`1px solid ${lesson.color}25` }}>
+          <Zap size={12} style={{ color:lesson.color }}/>
+          <span className="text-[12px] font-black" style={{ color:lesson.color }}>+{lesson.xp} XP</span>
+        </div>
+      </div>
+
+      {!quizActive ? (
+        <>
+          {/* Intro */}
+          <div className="px-5 py-4 rounded-2xl mb-8"
+            style={{ background:`${lesson.color}08`, border:`1px solid ${lesson.color}20` }}>
+            <p className="text-slate-300 leading-relaxed">{lesson.intro}</p>
+          </div>
+
+          {/* Sections */}
+          {lesson.sections.map((section, si) => (
+            <div key={si} className="mb-10">
+              <h3 className="text-lg font-black text-white mb-5 flex items-center gap-2">
+                <div className="w-1 h-5 rounded-full" style={{ background:lesson.color }}/>
+                {section.title}
+              </h3>
+
+              {section.type === 'vocab' && (
+                <>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+                    {section.items?.map((item: any, i: number) => (
+                      <motion.div key={i}
+                        initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }} transition={{ delay:i * 0.07 }}
+                        className="rounded-2xl overflow-hidden"
+                        style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.06)' }}>
+                        {item.img && (
+                          <div className="h-28 overflow-hidden">
+                            <img src={item.img} alt={item.imgAlt} className="w-full h-full object-cover opacity-70"/>
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="text-xl font-black text-white">{item.en}</div>
+                            <button className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 hover:scale-110 transition-all"
+                              style={{ background:`${lesson.color}18` }}>
+                              <Volume2 size={12} style={{ color:lesson.color }}/>
+                            </button>
+                          </div>
+                          <div className="text-[12px] text-slate-500 font-mono mb-1">{item.phonetic}</div>
+                          <div className="text-[12px] font-semibold mb-2" style={{ color:lesson.color }}>{item.pt}</div>
+                          <div className="text-[12px] text-slate-500 italic leading-snug">{item.example}</div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                  {(section as any).tip && (
+                    <div className="flex items-start gap-3 px-5 py-4 rounded-2xl"
+                      style={{ background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.2)' }}>
+                      <Lightbulb size={16} style={{ color:'#f59e0b', flexShrink:0, marginTop:2 }}/>
+                      <p className="text-[13px] text-slate-300 leading-relaxed">{(section as any).tip}</p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {section.type === 'sentences' && (
+                <div className="space-y-3">
+                  {section.items?.map((item: any, i: number) => (
+                    <div key={i} className="flex gap-4 px-5 py-4 rounded-2xl"
+                      style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.06)' }}>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0"
+                        style={{ background:`${lesson.color}18`, color:lesson.color }}>
+                        {item.letter}
+                      </div>
+                      <div>
+                        <div className="text-[12px] text-red-400 mb-0.5 line-through">{item.wrong}</div>
+                        <div className="text-[13px] font-bold text-white mb-1">{item.right}</div>
+                        <div className="text-[12px] text-slate-500 italic">{item.note}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {section.type === 'dialogue' && (
+                <div className="rounded-2xl overflow-hidden"
+                  style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="px-5 py-3 flex items-center gap-2"
+                    style={{ borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+                    <Play size={13} style={{ color:lesson.color }}/>
+                    <span className="text-[12px] font-bold text-white">Diálogo completo</span>
+                  </div>
+                  <div className="px-5 py-4 space-y-4">
+                    {(section as any).lines?.map((line: any, i: number) => (
+                      <div key={i} className={`flex gap-3 ${line.speaker === 'B' ? 'flex-row-reverse' : ''}`}>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-[11px] flex-shrink-0"
+                          style={{ background: line.speaker==='A' ? `${lesson.color}20` : 'rgba(139,92,246,0.15)', color: line.speaker==='A' ? lesson.color : '#a78bfa' }}>
+                          {line.speaker}
+                        </div>
+                        <div className={`max-w-[75%] flex flex-col ${line.speaker === 'B' ? 'items-end' : 'items-start'}`}>
+                          <div className="text-[13px] font-semibold text-white px-4 py-2.5 rounded-2xl mb-1"
+                            style={{ background: line.speaker==='A' ? `${lesson.color}12` : 'rgba(139,92,246,0.1)' }}>
+                            {line.text}
+                          </div>
+                          <div className="text-[11px] text-slate-600 px-1">{line.translation}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {section.type === 'numbers' && (
+                <div className="space-y-5">
+                  {(section as any).groups?.map((g: any, i: number) => (
+                    <div key={i}>
+                      <div className="text-[11px] font-bold uppercase tracking-widest text-slate-600 mb-3">{g.label}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {g.items.map((num: string, j: number) => (
+                          <span key={j} className="text-[13px] font-semibold px-3 py-1.5 rounded-lg"
+                            style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', color:'#e2e8f0' }}>
+                            <span className="text-slate-600 font-normal mr-1">{j}</span>{num}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  {(section as any).tip && (
+                    <div className="flex items-start gap-3 px-5 py-4 rounded-2xl"
+                      style={{ background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.2)' }}>
+                      <Lightbulb size={16} style={{ color:'#f59e0b', flexShrink:0, marginTop:2 }}/>
+                      <p className="text-[13px] text-slate-300 leading-relaxed">{(section as any).tip}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {section.type === 'translate' && (
+                <div className="space-y-4">
+                  {section.items?.map((item: any, i: number) => {
+                    const key = `translate-${si}-${i}`
+                    const state = choices[key] || { selected: null, revealed: false }
+                    const isCorrect = state.selected === item.answer
+                    return (
+                      <div key={i} className="rounded-2xl p-5"
+                        style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.06)' }}>
+                        <div className="text-[12px] text-slate-500 mb-1">Responda em inglês</div>
+                        <div className="text-lg font-black text-white mb-3">{item.pt}</div>
+                        <div className="grid sm:grid-cols-2 gap-2">
+                          {item.options.map((opt: string, oi: number) => {
+                            const isSelected = oi === state.selected
+                            let bg='rgba(255,255,255,0.04)', bdr='rgba(255,255,255,0.07)', clr='#94a3b8'
+                            if (state.revealed) {
+                              if (oi === item.answer) { bg='rgba(16,185,129,0.1)'; bdr='rgba(16,185,129,0.35)'; clr='#34d399' }
+                              else if (isSelected) { bg='rgba(239,68,68,0.08)'; bdr='rgba(239,68,68,0.3)'; clr='#f87171' }
+                            } else if (isSelected) { bg=`${lesson.color}10`; bdr=`${lesson.color}40`; clr='#f1f5f9' }
+                            return (
+                              <button key={oi} disabled={state.revealed} onClick={() => setChoices(s => ({ ...s, [key]: { selected: oi, revealed: false } }))}
+                                className="text-left px-4 py-3 rounded-xl text-[13px] font-medium transition-all"
+                                style={{ background:bg, border:`1px solid ${bdr}`, color:clr }}>
+                                {state.revealed && oi === item.answer && <CheckCircle size={13} className="inline mr-2 mb-0.5"/>}
+                                {opt}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        {item.note && <div className="text-[11px] text-slate-600 mt-2">{item.note}</div>}
+                        <div className="flex gap-2 mt-3">
+                          <button disabled={state.selected === null || state.revealed}
+                            onClick={() => {
+                              if (state.selected === null || state.revealed) return
+                              setChoices(s => ({ ...s, [key]: { selected: state.selected, revealed: true } }))
+                              if (isCorrect) addXP('quiz_correct')
+                              const correctOption = item.options[item.answer]
+                              const correctExplain = item.explain || `"${item.pt}" em inglês é "${correctOption}".`
+                              const wrongExplain = item.explainWrong || `A correta é "${correctOption}".`
+                              setFeedback({
+                                title: isCorrect ? 'Correto!' : 'Ops! Ainda não',
+                                message: isCorrect ? correctExplain : wrongExplain,
+                                tone: isCorrect ? 'success' : 'error',
+                              })
+                            }}
+                            className="px-4 py-2 rounded-lg text-[12px] font-bold text-white"
+                            style={{ background: state.selected !== null ? lesson.color : 'rgba(255,255,255,0.06)', opacity: state.selected === null ? 0.4 : 1 }}>
+                            Verificar
+                          </button>
+                          {state.revealed && (
+                            <div className="px-3 py-2 rounded-lg text-[12px] font-semibold"
+                              style={{
+                                background: isCorrect ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.1)',
+                                color:      isCorrect ? '#34d399' : '#f87171',
+                                border:     `1px solid ${isCorrect ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                              }}>
+                              {isCorrect ? 'Correto!' : 'Quase!'}
+                            </div>
+                          )}
+                        </div>
+                        {state.revealed && !isCorrect && (
+                          <div className="text-[11px] text-slate-500 mt-2">Resposta: {item.options[item.answer]}</div>
+                        )}
+                      </div>
+                    )
+                  })}
+                  {(section as any).tip && (
+                    <div className="flex items-start gap-3 px-5 py-4 rounded-2xl"
+                      style={{ background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.2)' }}>
+                      <Lightbulb size={16} style={{ color:'#f59e0b', flexShrink:0, marginTop:2 }}/>
+                      <p className="text-[13px] text-slate-300 leading-relaxed">{(section as any).tip}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {section.type === 'fill' && (
+                <div className="space-y-4">
+                  {section.items?.map((item: any, i: number) => {
+                    const key = `fill-${si}-${i}`
+                    const state = choices[key] || { selected: null, revealed: false }
+                    const isCorrect = state.selected === item.answer
+                    return (
+                      <div key={i} className="rounded-2xl p-5"
+                        style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.06)' }}>
+                        <div className="text-[13px] font-semibold text-white mb-2">{item.sentence}</div>
+                        {item.translation && <div className="text-[11px] text-slate-600 mb-3">{item.translation}</div>}
+                        <div className="grid sm:grid-cols-2 gap-2">
+                          {item.options.map((opt: string, oi: number) => {
+                            const isSelected = oi === state.selected
+                            let bg='rgba(255,255,255,0.04)', bdr='rgba(255,255,255,0.07)', clr='#94a3b8'
+                            if (state.revealed) {
+                              if (oi === item.answer) { bg='rgba(16,185,129,0.1)'; bdr='rgba(16,185,129,0.35)'; clr='#34d399' }
+                              else if (isSelected) { bg='rgba(239,68,68,0.08)'; bdr='rgba(239,68,68,0.3)'; clr='#f87171' }
+                            } else if (isSelected) { bg=`${lesson.color}10`; bdr=`${lesson.color}40`; clr='#f1f5f9' }
+                            return (
+                              <button key={oi} disabled={state.revealed} onClick={() => setChoices(s => ({ ...s, [key]: { selected: oi, revealed: false } }))}
+                                className="text-left px-4 py-3 rounded-xl text-[13px] font-medium transition-all"
+                                style={{ background:bg, border:`1px solid ${bdr}`, color:clr }}>
+                                {state.revealed && oi === item.answer && <CheckCircle size={13} className="inline mr-2 mb-0.5"/>}
+                                {opt}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <button disabled={state.selected === null || state.revealed}
+                            onClick={() => {
+                              if (state.selected === null || state.revealed) return
+                              setChoices(s => ({ ...s, [key]: { selected: state.selected, revealed: true } }))
+                              if (isCorrect) addXP('quiz_correct')
+                              const correctOption = item.options[item.answer]
+                              const correctExplain = item.explain || `A lacuna correta é "${correctOption}".`
+                              const wrongExplain = item.explainWrong || `A correta é "${correctOption}".`
+                              setFeedback({
+                                title: isCorrect ? 'Correto!' : 'Ops! Ainda não',
+                                message: isCorrect ? correctExplain : wrongExplain,
+                                tone: isCorrect ? 'success' : 'error',
+                              })
+                            }}
+                            className="px-4 py-2 rounded-lg text-[12px] font-bold text-white"
+                            style={{ background: state.selected !== null ? lesson.color : 'rgba(255,255,255,0.06)', opacity: state.selected === null ? 0.4 : 1 }}>
+                            Verificar
+                          </button>
+                          {state.revealed && (
+                            <div className="px-3 py-2 rounded-lg text-[12px] font-semibold"
+                              style={{
+                                background: isCorrect ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.1)',
+                                color:      isCorrect ? '#34d399' : '#f87171',
+                                border:     `1px solid ${isCorrect ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                              }}>
+                              {isCorrect ? 'Correto!' : 'Quase!'}
+                            </div>
+                          )}
+                        </div>
+                        {state.revealed && !isCorrect && (
+                          <div className="text-[11px] text-slate-500 mt-2">Resposta: {item.options[item.answer]}</div>
+                        )}
+                      </div>
+                    )
+                  })}
+                  {(section as any).tip && (
+                    <div className="flex items-start gap-3 px-5 py-4 rounded-2xl"
+                      style={{ background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.2)' }}>
+                      <Lightbulb size={16} style={{ color:'#f59e0b', flexShrink:0, marginTop:2 }}/>
+                      <p className="text-[13px] text-slate-300 leading-relaxed">{(section as any).tip}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {section.type === 'typing' && (
+                <div className="space-y-4">
+                  {section.items?.map((item: any, i: number) => {
+                    const key = `typing-${si}-${i}`
+                    const value = typingInput[key] ?? ''
+                    const status = typingStatus[key] || { revealed: false, correct: false }
+                    const isCorrect = normalizeAnswer(value) === normalizeAnswer(item.target)
+                    return (
+                      <div key={i} className="rounded-2xl p-5"
+                        style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.06)' }}>
+                        <div className="text-[12px] text-slate-500 mb-1">Digite a frase</div>
+                        <div className="text-[15px] font-semibold text-white mb-2">{item.target}</div>
+                        {item.translation && <div className="text-[11px] text-slate-600 mb-3">{item.translation}</div>}
+                        <input
+                          value={value}
+                          onChange={e => {
+                            const next = e.target.value
+                            setTypingInput(s => ({ ...s, [key]: next }))
+                            if (status.revealed) setTypingStatus(s => ({ ...s, [key]: { revealed: false, correct: false } }))
+                          }}
+                          placeholder="Digite aqui..."
+                          className="w-full px-4 py-3 rounded-xl text-[13px] text-white bg-transparent"
+                          style={{ border:'1px solid rgba(255,255,255,0.08)', outline:'none' }}
+                        />
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => {
+                              if (status.revealed) return
+                              setTypingStatus(s => ({ ...s, [key]: { revealed: true, correct: isCorrect } }))
+                              if (isCorrect) addXP('quiz_correct')
+                              const correctExplain = item.explain || `A frase correta é: "${item.target}".`
+                              const wrongExplain = item.explainWrong || `A frase correta é: "${item.target}".`
+                              setFeedback({
+                                title: isCorrect ? 'Perfeito!' : 'Quase lá',
+                                message: isCorrect ? correctExplain : wrongExplain,
+                                tone: isCorrect ? 'success' : 'error',
+                              })
+                            }}
+                            disabled={value.trim().length === 0}
+                            className="px-4 py-2 rounded-lg text-[12px] font-bold text-white"
+                            style={{ background: value.trim().length > 0 ? lesson.color : 'rgba(255,255,255,0.06)', opacity: value.trim().length === 0 ? 0.4 : 1 }}>
+                            Verificar
+                          </button>
+                          <button
+                            onClick={() => {
+                              setTypingInput(s => ({ ...s, [key]: '' }))
+                              setTypingStatus(s => ({ ...s, [key]: { revealed: false, correct: false } }))
+                            }}
+                            className="px-4 py-2 rounded-lg text-[12px] font-semibold text-slate-400 hover:text-white transition-all"
+                            style={{ border:'1px solid rgba(255,255,255,0.08)' }}>
+                            Limpar
+                          </button>
+                          {status.revealed && (
+                            <div className="px-3 py-2 rounded-lg text-[12px] font-semibold"
+                              style={{
+                                background: status.correct ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.1)',
+                                color:      status.correct ? '#34d399' : '#f87171',
+                                border:     `1px solid ${status.correct ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                              }}>
+                              {status.correct ? 'Perfeito!' : 'Quase!'}
+                            </div>
+                          )}
+                        </div>
+                        {status.revealed && !status.correct && (
+                          <div className="text-[11px] text-slate-500 mt-2">Resposta: {item.target}</div>
+                        )}
+                      </div>
+                    )
+                  })}
+                  {(section as any).tip && (
+                    <div className="flex items-start gap-3 px-5 py-4 rounded-2xl"
+                      style={{ background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.2)' }}>
+                      <Lightbulb size={16} style={{ color:'#f59e0b', flexShrink:0, marginTop:2 }}/>
+                      <p className="text-[13px] text-slate-300 leading-relaxed">{(section as any).tip}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {section.type === 'explain' && (
+                <div className="rounded-2xl p-5"
+                  style={{ background:'#0d0d1a', border:'1px solid rgba(255,255,255,0.06)' }}>
+                  <p className="text-[14px] text-slate-300 leading-relaxed">{(section as any).text}</p>
+                  {(section as any).examples?.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      {(section as any).examples.map((ex: any, i: number) => (
+                        <div key={i} className="text-[13px] text-slate-300">
+                          <span className="font-semibold text-white">{ex.en}</span>
+                          <span className="text-slate-500"> — {ex.pt}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {(section as any).tip && (
+                    <div className="flex items-start gap-3 px-5 py-4 rounded-2xl mt-4"
+                      style={{ background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.2)' }}>
+                      <Lightbulb size={16} style={{ color:'#f59e0b', flexShrink:0, marginTop:2 }}/>
+                      <p className="text-[13px] text-slate-300 leading-relaxed">{(section as any).tip}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Quiz CTA */}
+          <div className="mt-8 p-6 rounded-2xl text-center"
+            style={{ background:`${lesson.color}0a`, border:`1.5px solid ${lesson.color}25` }}>
+            <Trophy size={28} className="mx-auto mb-3" style={{ color:lesson.color }}/>
+            <h4 className="text-lg font-black text-white mb-2">Pronto para o quiz?</h4>
+            <p className="text-sm text-slate-400 mb-5">{lesson.quiz.length} perguntas — ganhe {lesson.xp} XP ao concluir</p>
+            <button onClick={() => setQuizActive(true)}
+              className="cta-button cta-float px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all"
+              style={{ background:lesson.color, boxShadow:`0 4px 20px ${lesson.color}30` }}>
+              Iniciar quiz <ArrowRight size={14} className="inline ml-1"/>
+            </button>
+          </div>
+        </>
+      ) : (
+        /* ── QUIZ ── */
+        <div className="max-w-lg mx-auto">
+          {!quizDone ? (
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background:'rgba(255,255,255,0.06)' }}>
+                  <div className="h-full rounded-full transition-all"
+                    style={{ width:`${(qIdx / lesson.quiz.length) * 100}%`, background:lesson.color }}/>
+                </div>
+                <span className="text-[11px] text-slate-500">{qIdx + 1}/{lesson.quiz.length}</span>
+              </div>
+
+              <div className="rounded-2xl p-6 mb-4"
+                style={{ background:'#0d0d1a', border:`1px solid ${revealed ? (selected === q.answer ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)') : 'rgba(255,255,255,0.07)'}` }}>
+                <p className="text-base font-bold text-white mb-5">{q.q}</p>
+                <div className="space-y-2.5">
+                  {q.options.map((opt, i) => {
+                    const isCorrect  = i === q.answer
+                    const isSelected = i === selected
+                    let bg='rgba(255,255,255,0.04)', bdr='rgba(255,255,255,0.07)', clr='#94a3b8'
+                    if (revealed) {
+                      if (isCorrect)       { bg='rgba(16,185,129,0.1)';  bdr='rgba(16,185,129,0.35)'; clr='#34d399' }
+                      else if (isSelected) { bg='rgba(239,68,68,0.08)';  bdr='rgba(239,68,68,0.3)';   clr='#f87171' }
+                    } else if (isSelected) { bg=`${lesson.color}10`; bdr=`${lesson.color}40`; clr='#f1f5f9' }
+                    return (
+                      <button key={i} disabled={revealed} onClick={() => setSelected(i)}
+                        className="w-full text-left px-4 py-3 rounded-xl text-[13px] font-medium transition-all"
+                        style={{ background:bg, border:`1px solid ${bdr}`, color:clr }}>
+                        {revealed && isCorrect && <CheckCircle size={13} className="inline mr-2 mb-0.5"/>}
+                        {opt}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="flex gap-2.5">
+                {!revealed ? (
+                  <button onClick={handleAnswer} disabled={selected === null}
+                    className="flex-1 py-3 rounded-xl text-sm font-bold text-white"
+                    style={{ background: selected !== null ? lesson.color : 'rgba(255,255,255,0.06)', opacity: selected === null ? 0.4 : 1 }}>
+                    Verificar
+                  </button>
+                ) : (
+                  <>
+                    <div className="flex-1 py-3 rounded-xl text-sm font-bold text-center"
+                      style={{
+                        background: selected === q.answer ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.08)',
+                        color:      selected === q.answer ? '#34d399' : '#f87171',
+                        border:     `1px solid ${selected === q.answer ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                      }}>
+                      {selected === q.answer ? 'Correto! +' + Math.round(lesson.xp / lesson.quiz.length) + ' XP' : 'Quase! Continue...'}
+                    </div>
+                    <button onClick={handleNext} className="cta-button px-5 py-3 rounded-xl text-sm font-bold text-white"
+                      style={{ background:lesson.color }}>
+                      {qIdx < lesson.quiz.length - 1 ? 'Próxima' : 'Finalizar'}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          ) : (
+            <motion.div initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} className="text-center py-8">
+              <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-5"
+                style={{ background: correct === lesson.quiz.length ? 'rgba(16,185,129,0.12)' : `${lesson.color}12` }}>
+                <Trophy size={36} style={{ color: correct === lesson.quiz.length ? '#34d399' : lesson.color }}/>
+              </div>
+              <div className="text-5xl font-black text-white mb-1">
+                {correct}<span className="text-slate-600">/{lesson.quiz.length}</span>
+              </div>
+              <div className="text-slate-400 mb-2">
+                {correct === lesson.quiz.length ? 'Perfeito! Você domina esta lição.' : correct >= 2 ? 'Muito bem! Continue avançando.' : 'Continue praticando — você vai chegar lá!'}
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
+                style={{ background:`${lesson.color}15`, color:lesson.color }}>
+                <Zap size={13}/> +{lesson.xp} XP ganhos!
+              </div>
+              <div className="flex gap-3 justify-center">
+                <button onClick={() => { setQIdx(0); setSelected(null); setRevealed(false); setCorrect(0); setQuizDone(false); setQuizActive(false) }}
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:text-white transition-all"
+                  style={{ border:'1px solid rgba(255,255,255,0.08)' }}>
+                  <RotateCcw size={13}/> Rever lição
+                </button>
+                <button onClick={onComplete}
+                  className="cta-button flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white"
+                  style={{ background:lesson.color }}>
+                  Próxima lição <ArrowRight size={14}/>
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── MODULE 1 PAGE ────────────────────────────────────────────────────────────
+
+export default function Modulo1Page() {
+  const { completedLessons } = useXPStore()
+  const [activeLesson, setActiveLesson] = useState<number | null>(null)
+  const [completed,    setCompleted]    = useState<number[]>([])
+
+  const lesson = activeLesson !== null ? LESSONS[activeLesson] : null
+
+  function handleComplete() {
+    if (activeLesson !== null) {
+      setCompleted(c => [...new Set([...c, activeLesson])])
+      const next = activeLesson + 1
+      if (next < LESSONS.length) setActiveLesson(next)
+      else setActiveLesson(null)
+    }
+  }
+
+  const totalXP  = LESSONS.filter((_, i) => completed.includes(i)).reduce((s, l) => s + l.xp, 0)
+  const progress = (completed.length / LESSONS.length) * 100
+
+  return (
+    <div className="min-h-screen" style={{ background:'#05050e' }}>
+      {/* Top bar */}
+      <div className="sticky top-0 z-40"
+        style={{ background:'rgba(5,5,14,0.95)', backdropFilter:'blur(20px)', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+        <div className="max-w-4xl mx-auto px-5 h-14 flex items-center gap-4">
+          <Link href="/dashboard" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+            <ArrowLeft size={16}/>
+            <span className="text-[13px] font-semibold">Dashboard</span>
+          </Link>
+          <div className="flex-1 mx-4">
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background:'rgba(255,255,255,0.06)' }}>
+              <motion.div className="h-full rounded-full" style={{ background:'linear-gradient(90deg,#3b82f6,#8b5cf6)' }}
+                animate={{ width:`${progress}%` }} transition={{ duration:0.5 }}/>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full"
+            style={{ background:'rgba(245,158,11,0.1)', color:'#fbbf24', border:'1px solid rgba(245,158,11,0.15)' }}>
+            <Zap size={11}/> {totalXP} XP
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-5 py-10">
+        {!lesson ? (
+          <>
+            <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5 }} className="mb-10">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-blue-400 mb-2">Módulo 1 de 8</div>
+              <h1 className="text-4xl font-black text-white tracking-tight mb-3">Os Fundamentos</h1>
+              <p className="text-slate-400 max-w-xl leading-relaxed">
+                Alfabeto, pronúncia, cumprimentos, números, dia a dia e o verbo to be — os blocos essenciais de qualquer conversa em inglês.
+                Domine isso e o resto vem naturalmente.
+              </p>
+              <div className="flex flex-wrap gap-3 mt-5">
+                <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
+                  style={{ background:'rgba(59,130,246,0.08)', color:'#60a5fa', border:'1px solid rgba(59,130,246,0.15)' }}>
+                  <BookOpen size={13}/> {LESSONS.length} lições
+                </div>
+                <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
+                  style={{ background:'rgba(245,158,11,0.08)', color:'#fbbf24', border:'1px solid rgba(245,158,11,0.15)' }}>
+                  <Zap size={13}/> {LESSONS.reduce((s, l) => s + l.xp, 0)} XP total
+                </div>
+                <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
+                  style={{ background:'rgba(16,185,129,0.08)', color:'#34d399', border:'1px solid rgba(16,185,129,0.15)' }}>
+                  <Target size={13}/> {LESSONS.reduce((s, l) => s + l.minutes, 0)} min estimado
+                </div>
+                {completed.length > 0 && (
+                  <div className="flex items-center gap-2 text-[12px] px-3.5 py-2 rounded-xl"
+                    style={{ background:'rgba(16,185,129,0.08)', color:'#34d399', border:'1px solid rgba(16,185,129,0.15)' }}>
+                    <CheckCircle size={13}/> {completed.length}/{LESSONS.length} concluídas
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            <div className="space-y-3">
+              {LESSONS.map((lesson, i) => (
+                <LessonCard key={lesson.id} lesson={lesson} index={i}
+                  isCompleted={completed.includes(i)}
+                  onClick={() => setActiveLesson(i)}/>
+              ))}
+            </div>
+
+            {completed.length === LESSONS.length && (
+              <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3 }}
+                className="mt-8 p-8 rounded-2xl text-center"
+                style={{ background:'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.2)' }}>
+                <Trophy size={32} className="mx-auto mb-3 text-green-400"/>
+                <h3 className="text-xl font-black text-white mb-2">Módulo 1 concluído!</h3>
+                <p className="text-slate-400 mb-5">Você ganhou {totalXP} XP. Próximo: Verbos Essenciais.</p>
+                <Link href="/dashboard"
+                  className="cta-button inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white"
+                  style={{ background:'#10b981' }}>
+                  Voltar ao Dashboard <ArrowRight size={14}/>
+                </Link>
+              </motion.div>
+            )}
+          </>
+        ) : (
+          <LessonView lesson={lesson} onBack={() => setActiveLesson(null)} onComplete={handleComplete}/>
+        )}
+      </div>
+    </div>
+  )
+}

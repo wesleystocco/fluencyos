@@ -1,0 +1,109 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   FLUENCYOS - TEMAS COMPLETOS
+   DARK | LIGHT | AUTO - Designs minimalistas e bem definidos
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   DARK THEME (Padrão - Azul muito escuro)
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+:root,
+html.dark {
+  --bg-primary: #0a0a14;
+  --bg-secondary: #12121d;
+  --bg-tertiary: #1a1a26;
+  --bg-hover: #22222f;
+  --text-primary: #f0f0ff;
+  --text-secondary: #c0c0d0;
+  --text-tertiary: #8a8a9a;
+  --border-light: #2a2a3a;
+  --border-medium: #3a3a4a;
+  --border-heavy: #4a4a5a;
+  --accent-blue: #3b82f6;
+  --accent-blue-light: #60a5fa;
+  --accent-green: #10b981;
+  --accent-yellow: #fbbf24;
+  --accent-red: #ef4444;
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+html {
+  background: #05050e;
+  color: #f0f0ff;
+}
+
+html.dark {
+  background: #05050e !important;
+  color: #f0f0ff !important;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   LIGHT THEME (Branco minimalista com cores pastéis suaves)
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+html.light {
+  /* Softer light theme (less eye strain than pure white). */
+  --bg-primary: #f6f4ef;   /* warm ivory */
+  --bg-secondary: #f0ece6; /* muted sand */
+  --bg-tertiary: #e9e4dc;  /* card tint */
+  --bg-hover: #dfd9cf;
+  --text-primary: #1f2937;
+  --text-secondary: #334155;
+  --text-tertiary: #475569;
+  --border-light: #e4ddd3;
+  --border-medium: #d8d0c4;
+  --border-heavy: #c8beaf;
+  --accent-blue: #2b6cb0;
+  --accent-blue-light: #3b82f6;
+  --accent-green: #0f766e;
+  --accent-yellow: #b45309;
+  --accent-red: #b91c1c;
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+html.light body {
+  background: var(--bg-primary) !important;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   AUTO THEME (Cinza claro medium - meio termo elegante)
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+html.auto {
+  /* "Intermediario": a dim theme between light and dark (not white). */
+  --bg-primary: #0f172a;
+  --bg-secondary: #131c32;
+  --bg-tertiary: #192544;
+  --bg-hover: #223055;
+  --text-primary: #e5e7eb;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --border-light: #243152;
+  --border-medium: #2c3b63;
+  --border-heavy: #34466f;
+  --accent-blue: #60a5fa;
+  --accent-blue-light: #93c5fd;
+  --accent-green: #34d399;
+  --accent-yellow: #fbbf24;
+  --accent-red: #fb7185;
+  --shadow-md: 0 10px 26px rgba(0, 0, 0, 0.35);
+
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+html.auto body {
+  background: var(--bg-primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════ */
+
+
+
+
+
+
+

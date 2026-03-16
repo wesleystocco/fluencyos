@@ -1,0 +1,225 @@
+# 🚀 GUIA COMPLETO - FLUENCYOS SETUP
+
+## ⚡ Resumo Rápido
+
+Este projeto tem:
+- ✅ Sistema de autenticação (email + username)
+- ✅ Sistema de XP e níveis
+- ✅ Avatares customizáveis (builder completo)
+- ✅ Cursos com módulos e aulas
+- 🔄 Tema dia/noite (em desenvolvimento)
+
+**Para funcionar, você precisa executar UMA migração SQL no Supabase.**
+
+---
+
+## 📋 PASSO 1: SETUP BANCO DE DADOS (5 minutos)
+
+### 1.1) Abra Supabase
+
+Acesse: https://app.supabase.com/
+
+Clique no seu projeto.
+
+### 1.2) Vá ao SQL Editor
+
+Na barra lateral esquerda:
+- **SQL Editor** → **New Query**
+
+### 1.3) Cole o Script SQL
+
+Abra este arquivo: `/supabase/migrations/000-setup-complete.sql`
+
+Copie TODO o conteúdo (Ctrl+A → Ctrl+C)
+
+Cole no Supabase Query Editor (Ctrl+V)
+
+### 1.4) Execute
+
+Clique em **▶️ RUN** (ou Ctrl+Enter)
+
+**Aguarde até ver uma mensagem de sucesso.**
+
+Se houver erro, não se preocupe:
+- Se disser *"already exists"* = tudo OK
+- Se disser erro de policy = execute novamente
+- Se disser erro de função = tudo bem
+
+---
+
+## 🎮 PASSO 2: USAR O APP
+
+### 2.1) Nova Aba no Navegador
+
+Abra seu app: `http://localhost:3000`
+
+Se não estiver rodando:
+```bash
+npm run dev
+```
+
+### 2.2) Criar Conta
+
+Clique em **"Criar conta"**
+
+Preencha:
+- **Email**: seu_email@gmail.com
+- **Senha**: MinhaSenh@2025 (precisa ter maiúscula + número + símbolo + 8+ caracteres)
+- **Apelido**: seu_usuario_legal (3-20 caracteres, sem espaços)
+- **Avatar**: Clique no botão 🎲 para gerar aleatório, ou customize
+
+Clique em **"Criar"**
+
+### 2.3) Confirmar E-mail
+
+Você vai ver uma mensagem: **"Verifique seu e-mail"**
+
+Vá até seu email e procure um link de confirmação.
+
+Clique no link.
+
+### 2.4) Login
+
+Você será redirecionado para `/login`
+
+**Escolha UMA das opções:**
+
+Opção A (Email):
+- Campo: seu_email@gmail.com
+- Senha: MinhaSenh@2025
+
+Opção B (Apelido):
+- Campo: seu_usuario_legal
+- Senha: MinhaSenh@2025
+
+Clique em **"Entrar"**
+
+### 2.5) Pronto! 🎉
+
+Você está dentro do **Dashboard**!
+
+Deve aparecer:
+- 👤 Seu avatar no canto superior
+- ⚡ Seu XP e nível
+- 📚 Listagem de cursos
+- 🎯 Desafio do dia
+
+---
+
+## 🆘 TROUBLESHOOTING
+
+### ❌ "Usuário não encontrado" ao fazer login
+
+**Solução:**
+1. Recupere seu apelido exato (verificou a grafia?)
+2. Tente fazer login com email em vez de apelido
+3. Crie uma nova conta
+
+### ❌ "Erro ao conectar. Tente com seu e-mail"
+
+**Solução:**
+1. Verifique se executou o script SQL (Passo 1)
+2. Verifique seu .env.local tem as chaves Supabase
+3. Abra F12 → Console e procure erros vermelhos
+4. Tente modo incógnito/anônimo
+
+### ❌ "Confirme seu e-mail primeiro"
+
+**Solução:**
+1. Procure o email de confirmação na caixa de entrada
+2. Se não encontrou, procure na pasta **Spam**
+3. Clique no link do email
+4. Tente fazer login novamente
+
+### ❌ Avatar não aparece no dashboard
+
+**Solução:**
+1. Recarregue a página (F5)
+2. Limpe cache (Ctrl+Shift+Del)
+3. Teste em modo incógnito
+4. Verifique console (F12) para erros de imagem
+
+### ❌ Não consigo acessar nenhum curso/módulo
+
+**Solução:**
+1. Verifique se fez login (deve haver avatar)
+2. O módulo 1 deve estar desbloqueado automaticamente
+3. Recarregue página (F5)
+4. Tente outro navegador
+
+---
+
+## ✨ Próximas Funcionalidades
+
+Após confirmar que login funciona:
+
+1. **Sistema de Tema** → Modo dia/noite/intermediário
+2. **Página de Cursos** → Melhorar listagem
+3. **Compra de Avatares** → Sistema de loja
+4. **Leaderboard** → Ranking global
+5. **IA Mentor** → Chat com IA
+
+PASSO 3: Teste o fluxo completo
+--------------------------------
+
+A) ACESSAR A PÁGINA INICIAL
+   > http://localhost:3000
+   > Se estiver logado: redireciona automaticamente para /dashboard
+   > Se não: mostra a página inicial com botão de login
+
+B) CRIAR NOVA CONTA
+   > Clique em "Login" na navbar
+   > Clique em "Criar Conta"
+   > Preencha:
+     - Email: seu_email@gmail.com
+     - Username: seu_usuario123 (SEM espaços)
+     - Password: Test@1234
+     - Escolha um avatar
+   > Clique "Registrar"
+   > Verifique seu email e clique no link de confirmação
+   > Deve redirecionar para /dashboard automaticamente
+
+C) FAZER LOGIN
+   Opção 1 - Com Email:
+   > Campo: seu_email@gmail.com
+   > Senha: Test@1234
+   > Clique "Entrar"
+
+   Opção 2 - Com Username:
+   > Campo: seu_usuario123
+   > Senha: Test@1234
+   > Clique "Entrar"
+
+D) VERIFI CAR QUE ESTÁ LOGADO
+   > Veja XP = 0 no dashboard
+   > Veja seu avatar
+   > Veja seu username
+
+E) LOGOUT
+   > Dashboard > botão de logout (canto inferior)
+   > Volta para página inicial
+
+F) VERIFICAR PERSISTÊNCIA
+   > Faça uma ação no dashboard (ex: completar desafio)
+   > Logout
+   > Login novamente
+   > XP deve estar salvo
+
+TROUBLESHOOTING
+===============
+
+Se der erro "Usuário não encontrado":
+  1. Verifique se executou o SQL de RLS
+  2. Verifique o console do navegador (F12) para logs
+  3. Certifique-se de que o username não tem espaços
+
+Se o profile não foi criado:
+  1. Vá para Supabase > Table Editor
+  2. Procure por "profiles"
+  3. Se a tabela estiver vazia, execute:
+     supabase/migrations/debug_profiles.sql
+
+Se não redireciona para dashboard quando logado:
+  1. Limpe o cache (Ctrl+Shift+Del)
+  2. Recarregue a página (F5)
+  3. Verifique se o middleware está ativo
